@@ -5,6 +5,7 @@ import {
   RefreshTokenRequest,
   RefreshTokenResponse,
   GetProfileResponse,
+  HealthCheckResponse,
 } from "@/types/auth";
 import { LoginUserResponse } from "@/types/user";
 
@@ -22,6 +23,16 @@ export const authService = {
       
       if (typeof window !== "undefined") {
         localStorage.setItem("user", JSON.stringify(response.data.user));
+      }
+
+      try {
+        const healthResponse = await this.healthCheck();
+        if (healthResponse.status === "success" && healthResponse.data?.instanceId) {
+          const { setServerInstanceID } = await import("@/lib/api");
+          setServerInstanceID(healthResponse.data.instanceId);
+        }
+      } catch (error) {
+        console.error("Failed to get server instance ID:", error);
       }
     }
 
@@ -75,6 +86,14 @@ export const authService = {
   isAuthenticated(): boolean {
     if (typeof window === "undefined") return false;
     return !!localStorage.getItem("token");
+  },
+
+  async healthCheck(): Promise<HealthCheckResponse> {
+    const response = await api.get<HealthCheckResponse["data"]>(
+      "/api/v1/health",
+      { skipAuth: true }
+    );
+    return response as HealthCheckResponse;
   },
 };
 

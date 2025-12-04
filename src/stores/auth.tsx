@@ -21,11 +21,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = authService.getStoredUser();
-    if (storedUser) {
-      setUser(storedUser);
-    }
-    setIsLoading(false);
+    const checkServerInstance = async () => {
+      const storedUser = authService.getStoredUser();
+      if (storedUser) {
+        try {
+          const healthResponse = await authService.healthCheck();
+          if (healthResponse.status === "success" && healthResponse.data?.instanceId) {
+            const { getServerInstanceID, setServerInstanceID, clearAuthTokens } = await import("@/lib/api");
+            const storedInstanceID = getServerInstanceID();
+            
+            if (storedInstanceID && storedInstanceID !== healthResponse.data.instanceId) {
+              clearAuthTokens();
+              setUser(null);
+              if (typeof window !== "undefined") {
+                window.location.href = "/login";
+              }
+              setIsLoading(false);
+              return;
+            }
+            
+            if (!storedInstanceID) {
+              setServerInstanceID(healthResponse.data.instanceId);
+            }
+          }
+        } catch (error) {
+          console.error("Failed to check server instance:", error);
+          const { clearAuthTokens } = await import("@/lib/api");
+          clearAuthTokens();
+          setUser(null);
+        }
+      }
+      
+      if (storedUser) {
+        setUser(storedUser);
+      }
+      setIsLoading(false);
+    };
+
+    checkServerInstance();
   }, []);
 
   const login = useCallback(async (credentials: LoginRequest) => {

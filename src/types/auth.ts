@@ -35,3 +35,9 @@ export interface GetProfileResponseData {
 
 export interface GetProfileResponse extends ApiResponse<GetProfileResponseData> {}
 
+export interface HealthCheckResponseData {
+  instanceId: string;
+}
+
+export interface HealthCheckResponse extends ApiResponse<HealthCheckResponseData> {}
+
