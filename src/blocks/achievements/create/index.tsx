@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { DatePicker } from "@/components/date-picker";
 import { achievementService } from "@/services/achievement";
 import { CreateAchievementRequest, Attachment } from "@/types/achievement";
 
@@ -163,6 +164,29 @@ export default function CreateAchievementPage() {
     return date.toISOString();
   };
 
+  const convertStringToDate = (dateString: string | undefined): Date | null => {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return null;
+    return date;
+  };
+
+  const convertDateToString = (date: Date | null): string => {
+    if (!date) return "";
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const formatDateForDisplay = (date: Date): string => {
+    return date.toLocaleDateString("id-ID", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
@@ -272,13 +296,20 @@ export default function CreateAchievementPage() {
             onChange={(e) => handleDetailsChange("medalType", e.target.value)}
             placeholder="Contoh: Gold, Silver, Bronze"
           />
-          <Input
-            label="Tanggal Event"
-            name="eventDate"
-            type="date"
-            value={(formData.details?.eventDate as string) || ""}
-            onChange={(e) => handleDetailsChange("eventDate", e.target.value)}
-          />
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Tanggal Event
+            </label>
+            <DatePicker
+              value={convertStringToDate(formData.details?.eventDate as string)}
+              onChange={(date) =>
+                handleDetailsChange("eventDate", convertDateToString(date))
+              }
+              placeholder="Pilih tanggal event"
+              format={formatDateForDisplay}
+              className="w-full"
+            />
+          </div>
           <Input
             label="Lokasi"
             name="location"
@@ -340,13 +371,20 @@ export default function CreateAchievementPage() {
             onChange={(e) => handleDetailsChange("issn", e.target.value)}
             placeholder="Contoh: 1234-5678"
           />
-          <Input
-            label="Tanggal Event"
-            name="eventDate"
-            type="date"
-            value={(formData.details?.eventDate as string) || ""}
-            onChange={(e) => handleDetailsChange("eventDate", e.target.value)}
-          />
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Tanggal Event
+            </label>
+            <DatePicker
+              value={convertStringToDate(formData.details?.eventDate as string)}
+              onChange={(date) =>
+                handleDetailsChange("eventDate", convertDateToString(date))
+              }
+              placeholder="Pilih tanggal event"
+              format={formatDateForDisplay}
+              className="w-full"
+            />
+          </div>
         </div>
       );
     }
@@ -370,42 +408,56 @@ export default function CreateAchievementPage() {
             onChange={(e) => handleDetailsChange("position", e.target.value)}
             placeholder="Contoh: Ketua"
           />
-          <Input
-            label="Tanggal Mulai"
-            name="periodStart"
-            type="date"
-            value={
-              formData.details?.period
-                ? (formData.details.period as { start: string }).start
-                : ""
-            }
-            onChange={(e) =>
-              handleDetailsChange("period", {
-                start: e.target.value,
-                end: formData.details?.period
-                  ? (formData.details.period as { end: string }).end
-                  : "",
-              })
-            }
-          />
-          <Input
-            label="Tanggal Selesai"
-            name="periodEnd"
-            type="date"
-            value={
-              formData.details?.period
-                ? (formData.details.period as { end: string }).end
-                : ""
-            }
-            onChange={(e) =>
-              handleDetailsChange("period", {
-                start: formData.details?.period
-                  ? (formData.details.period as { start: string }).start
-                  : "",
-                end: e.target.value,
-              })
-            }
-          />
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Tanggal Mulai
+            </label>
+            <DatePicker
+              value={
+                formData.details?.period
+                  ? convertStringToDate(
+                      (formData.details.period as { start: string }).start
+                    )
+                  : null
+              }
+              onChange={(date) =>
+                handleDetailsChange("period", {
+                  start: convertDateToString(date),
+                  end: formData.details?.period
+                    ? (formData.details.period as { end: string }).end
+                    : "",
+                })
+              }
+              placeholder="Pilih tanggal mulai"
+              format={formatDateForDisplay}
+              className="w-full"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Tanggal Selesai
+            </label>
+            <DatePicker
+              value={
+                formData.details?.period
+                  ? convertStringToDate(
+                      (formData.details.period as { end: string }).end
+                    )
+                  : null
+              }
+              onChange={(date) =>
+                handleDetailsChange("period", {
+                  start: formData.details?.period
+                    ? (formData.details.period as { start: string }).start
+                    : "",
+                  end: convertDateToString(date),
+                })
+              }
+              placeholder="Pilih tanggal selesai"
+              format={formatDateForDisplay}
+              className="w-full"
+            />
+          </div>
         </div>
       );
     }
@@ -438,20 +490,34 @@ export default function CreateAchievementPage() {
             }
             placeholder="Contoh: AWS-123456789"
           />
-          <Input
-            label="Tanggal Event"
-            name="eventDate"
-            type="date"
-            value={(formData.details?.eventDate as string) || ""}
-            onChange={(e) => handleDetailsChange("eventDate", e.target.value)}
-          />
-          <Input
-            label="Berlaku Sampai"
-            name="validUntil"
-            type="date"
-            value={(formData.details?.validUntil as string) || ""}
-            onChange={(e) => handleDetailsChange("validUntil", e.target.value)}
-          />
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Tanggal Event
+            </label>
+            <DatePicker
+              value={convertStringToDate(formData.details?.eventDate as string)}
+              onChange={(date) =>
+                handleDetailsChange("eventDate", convertDateToString(date))
+              }
+              placeholder="Pilih tanggal event"
+              format={formatDateForDisplay}
+              className="w-full"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Berlaku Sampai
+            </label>
+            <DatePicker
+              value={convertStringToDate(formData.details?.validUntil as string)}
+              onChange={(date) =>
+                handleDetailsChange("validUntil", convertDateToString(date))
+              }
+              placeholder="Pilih tanggal berlaku sampai"
+              format={formatDateForDisplay}
+              className="w-full"
+            />
+          </div>
         </div>
       );
     }
@@ -470,13 +536,20 @@ export default function CreateAchievementPage() {
             }
             placeholder="Contoh: 3.95"
           />
-          <Input
-            label="Tanggal Event"
-            name="eventDate"
-            type="date"
-            value={(formData.details?.eventDate as string) || ""}
-            onChange={(e) => handleDetailsChange("eventDate", e.target.value)}
-          />
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Tanggal Event
+            </label>
+            <DatePicker
+              value={convertStringToDate(formData.details?.eventDate as string)}
+              onChange={(date) =>
+                handleDetailsChange("eventDate", convertDateToString(date))
+              }
+              placeholder="Pilih tanggal event"
+              format={formatDateForDisplay}
+              className="w-full"
+            />
+          </div>
         </div>
       );
     }

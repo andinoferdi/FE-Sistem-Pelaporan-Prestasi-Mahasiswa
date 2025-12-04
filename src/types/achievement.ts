@@ -51,7 +51,7 @@ export interface AchievementDetails {
   location?: string;
   organizer?: string;
   score?: number;
-  customFields?: Record<string, any>;
+  customFields?: Record<string, unknown>;
 }
 
 export interface Achievement {
@@ -102,12 +102,11 @@ export interface AchievementReference {
   updated_at: string;
 }
 
-export interface CreateAchievementResponse extends ApiResponse<Achievement> {}
+export type CreateAchievementResponse = ApiResponse<Achievement>;
 
-export interface UpdateAchievementResponse extends ApiResponse<Achievement> {}
+export type UpdateAchievementResponse = ApiResponse<Achievement>;
 
-export interface DeleteAchievementResponse extends ApiResponse<null> {}
+export type DeleteAchievementResponse = ApiResponse<null>;
 
-export interface SubmitAchievementResponse
-  extends ApiResponse<AchievementReference> {}
+export type SubmitAchievementResponse = ApiResponse<AchievementReference>;
 

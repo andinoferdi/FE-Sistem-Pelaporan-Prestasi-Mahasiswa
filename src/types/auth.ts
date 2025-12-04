@@ -12,7 +12,7 @@ export interface LoginResponseData {
   user: LoginUserResponse;
 }
 
-export interface LoginResponse extends ApiResponse<LoginResponseData> {}
+export type LoginResponse = ApiResponse<LoginResponseData>;
 
 export interface RefreshTokenRequest {
   refreshToken: string;
@@ -23,7 +23,7 @@ export interface RefreshTokenResponseData {
   refreshToken: string;
 }
 
-export interface RefreshTokenResponse extends ApiResponse<RefreshTokenResponseData> {}
+export type RefreshTokenResponse = ApiResponse<RefreshTokenResponseData>;
 
 export interface GetProfileResponseData {
   user_id: string;
@@ -33,11 +33,11 @@ export interface GetProfileResponseData {
   role_id: string;
 }
 
-export interface GetProfileResponse extends ApiResponse<GetProfileResponseData> {}
+export type GetProfileResponse = ApiResponse<GetProfileResponseData>;
 
 export interface HealthCheckResponseData {
   instanceId: string;
 }
 
-export interface HealthCheckResponse extends ApiResponse<HealthCheckResponseData> {}
+export type HealthCheckResponse = ApiResponse<HealthCheckResponseData>;
 
