@@ -1,13 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/stores/auth";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 
 export function Header() {
-  const router = useRouter();
   const { user, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -28,7 +25,9 @@ export function Header() {
 
   const handleLogout = async () => {
     await logout();
-    router.push("/login");
+    if (typeof window !== "undefined") {
+      window.location.href = "/";
+    }
   };
 
   return (

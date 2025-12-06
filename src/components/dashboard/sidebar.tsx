@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/stores/auth";
 import { useState } from "react";
@@ -31,6 +32,7 @@ const menuItems: MenuItem[] = [
         />
       </svg>
     ),
+    roles: ["Admin"],
   },
   {
     href: "/dashboard/achievements",
@@ -74,8 +76,26 @@ export function Sidebar() {
   return (
     <>
       <aside className="hidden lg:flex flex-col w-64 bg-card border-r border-border/50 min-h-screen fixed left-0 top-0 pt-16">
-        <div className="flex-1 overflow-y-auto py-6">
-          <nav className="px-4 space-y-1">
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-4 border-b border-border/50">
+            <Link href="/dashboard" className="flex items-center gap-3 group">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden relative bg-transparent">
+                <Image
+                  src="/images/logo.png"
+                  alt="Logo"
+                  width={32}
+                  height={32}
+                  className="object-contain"
+                  priority
+                  unoptimized
+                />
+              </div>
+              <span className="text-base font-semibold text-foreground tracking-tight">
+                Dashboard
+              </span>
+            </Link>
+          </div>
+          <nav className="px-4 py-6 space-y-1">
             {filteredMenuItems.map((item) => {
               const active = isActive(item.href);
               return (
@@ -126,7 +146,22 @@ export function Sidebar() {
             />
             <aside className="fixed left-0 top-0 h-full w-64 bg-card border-r border-border/50 z-50 overflow-y-auto">
               <div className="p-4 border-b border-border/50 flex items-center justify-between">
-                <span className="font-semibold text-foreground">Menu</span>
+                <Link href="/dashboard" className="flex items-center gap-3 group" onClick={() => setIsMobileOpen(false)}>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden relative bg-transparent">
+                    <Image
+                      src="/images/logo.png"
+                      alt="Logo"
+                      width={32}
+                      height={32}
+                      className="object-contain"
+                      priority
+                      unoptimized
+                    />
+                  </div>
+                  <span className="text-base font-semibold text-foreground tracking-tight">
+                    Dashboard
+                  </span>
+                </Link>
                 <button
                   onClick={() => setIsMobileOpen(false)}
                   className="p-1 rounded-lg hover:bg-muted/50"

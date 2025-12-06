@@ -34,7 +34,12 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.push("/dashboard");
+      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      if (storedUser.role === "Admin") {
+        router.push("/dashboard");
+      } else {
+        router.push("/dashboard/achievements");
+      }
     }
   }, [isAuthenticated, isLoading, router]);
 

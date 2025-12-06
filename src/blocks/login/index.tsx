@@ -16,17 +16,21 @@ import { Alert } from "@/components/ui/alert";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      router.push("/");
+    if (isAuthenticated && user) {
+      if (user.role === "Admin") {
+        router.push("/dashboard");
+      } else {
+        router.push("/dashboard/achievements");
+      }
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, user, router]);
 
   if (isAuthenticated) {
     return null;
@@ -39,7 +43,15 @@ export default function LoginPage() {
 
     try {
       await login({ username, password });
-      router.push("/");
+      const storedUserStr = localStorage.getItem("user");
+      if (storedUserStr) {
+        const storedUser = JSON.parse(storedUserStr);
+        if (storedUser.role === "Admin") {
+          router.push("/dashboard");
+        } else {
+          router.push("/dashboard/achievements");
+        }
+      }
     } catch (err) {
       setError(
         err instanceof Error

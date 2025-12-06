@@ -110,7 +110,7 @@ async function apiRequest<T>(
       } else {
         clearAuthTokens();
         if (typeof window !== "undefined") {
-          window.location.href = "/login";
+          window.location.href = "/";
         }
         throw new Error("Unauthorized");
       }
@@ -124,7 +124,7 @@ async function apiRequest<T>(
       if (response.status === 500 && error.data?.message?.includes("instance")) {
         clearAuthTokens();
         if (typeof window !== "undefined") {
-          window.location.href = "/login";
+          window.location.href = "/";
         }
       }
       
@@ -138,7 +138,7 @@ async function apiRequest<T>(
         if (storedInstanceID && storedInstanceID !== healthData.instanceId) {
           clearAuthTokens();
           if (typeof window !== "undefined") {
-            window.location.href = "/login";
+            window.location.href = "/";
           }
           throw new Error("Server restarted. Please login again.");
         }
@@ -216,7 +216,7 @@ export const api = {
         } else {
           clearAuthTokens();
           if (typeof window !== "undefined") {
-            window.location.href = "/login";
+            window.location.href = "/";
           }
           throw new Error("Unauthorized");
         }
