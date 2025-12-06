@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { useAuth } from "@/stores/auth";
 import { navbarMenu } from "@/stores/navbar-menu";
 import { Button } from "@/components/ui/button";
+import { UINavbar, UINavbarContainer } from "@/components/ui/ui-navbar";
 
 export function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -23,26 +25,22 @@ export function Navbar() {
   });
 
   return (
-    <nav className="sticky top-0 z-50 bg-card/70 backdrop-blur-xl border-b border-border/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <UINavbar position="sticky" ariaLabel="Navigasi utama">
+      <UINavbarContainer size="default">
+        <div className="flex justify-between items-center py-6 min-h-[88px]">
           {/* Logo */}
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-9 h-9 rounded-xl bg-linear-to-br from-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-shadow">
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-                  />
-                </svg>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden relative bg-transparent">
+                <Image
+                  src="/images/logo.png"
+                  alt="Logo"
+                  width={36}
+                  height={36}
+                  className="object-contain"
+                  priority
+                  unoptimized
+                />
               </div>
               <span className="text-lg font-bold text-foreground tracking-tight">
                 {process.env.NEXT_PUBLIC_APP_NAME || "SPPM"}
@@ -68,7 +66,7 @@ export function Navbar() {
             {isAuthenticated ? (
               <>
                 <div className="hidden sm:flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary/20 to-purple-600/20 flex items-center justify-center border border-primary/20">
+                  <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary/20 to-primary/10 flex items-center justify-center border border-primary/20">
                     <span className="text-sm font-semibold text-primary">
                       {(user?.fullName || user?.username || "U")
                         .charAt(0)
@@ -83,7 +81,7 @@ export function Navbar() {
                   variant="ghost"
                   size="sm"
                   onClick={handleLogout}
-                  className="text-muted-foreground hover:text-foreground"
+                  className="text-muted-foreground hover:text-foreground cursor-pointer disabled:cursor-not-allowed"
                 >
                   <svg
                     className="w-4 h-4 mr-1.5"
@@ -104,8 +102,8 @@ export function Navbar() {
             ) : (
               <Link href="/login">
                 <Button
-                  className="bg-linear-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white"
-                  size="sm"
+                  className="bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground cursor-pointer disabled:cursor-not-allowed rounded-lg!"
+                  size="default"
                 >
                   <svg
                     className="w-4 h-4 mr-1.5"
@@ -127,7 +125,7 @@ export function Navbar() {
 
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
             >
               <svg
                 className="w-5 h-5"
@@ -171,7 +169,7 @@ export function Navbar() {
             </div>
           </div>
         )}
-      </div>
-    </nav>
+      </UINavbarContainer>
+    </UINavbar>
   );
 }

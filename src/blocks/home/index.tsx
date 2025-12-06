@@ -1,14 +1,58 @@
 "use client";
 
+import { useState, useEffect, useCallback, useMemo } from "react";
+import Image from "next/image";
 import { useAuth } from "@/stores/auth";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-
+import { achievementService } from "@/services/achievement";
+import type { Achievement, AchievementStatus } from "@/types/achievement";
 
 export default function HomePage() {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [statuses, setStatuses] = useState<Record<string, AchievementStatus>>({});
+  const [isLoadingAchievements, setIsLoadingAchievements] = useState(false);
+
+  const loadAchievements = useCallback(async () => {
+    if (!isAuthenticated || user?.role !== "Mahasiswa") return;
+    
+    setIsLoadingAchievements(true);
+    try {
+      const response = await achievementService.getAchievements();
+      if (response.status === "success" && response.data) {
+        setAchievements(response.data);
+        const statusMap: Record<string, AchievementStatus> = {};
+        response.data.forEach(
+          (achievement: Achievement & { status?: AchievementStatus }) => {
+            statusMap[achievement.id] = achievement.status || "draft";
+          }
+        );
+        setStatuses(statusMap);
+      }
+    } catch (err) {
+      console.error("Failed to load achievements:", err);
+    } finally {
+      setIsLoadingAchievements(false);
+    }
+  }, [isAuthenticated, user?.role]);
+
+  useEffect(() => {
+    if (isAuthenticated && user?.role === "Mahasiswa") {
+      loadAchievements();
+    }
+  }, [isAuthenticated, user?.role, loadAchievements]);
+
+  const achievementStats = useMemo(() => {
+    const total = achievements.length;
+    const verified = achievements.filter(
+      (achievement) => statuses[achievement.id] === "verified"
+    ).length;
+    const percentage = total > 0 ? Math.round((verified / total) * 100) : 0;
+    return { total, verified, percentage };
+  }, [achievements, statuses]);
 
   if (isLoading) {
     return (
@@ -25,153 +69,196 @@ export default function HomePage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px]" />
-          <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[100px]" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-violet-500/5 rounded-full blur-[150px]" />
-        </div>
+      <div className="bg-background">
+        {/* Hero Section - Split Layout */}
+        <div className="relative overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16 lg:pt-20 pb-8 sm:pb-12 lg:pb-16 relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+              {/* Left Section - Content */}
+              <div className="text-left">
+                {/* Headline */}
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4 leading-tight">
+                  Sistem Pelaporan Prestasi{" "}
+                  <span className="relative inline-block">
+                    <span className="text-primary">Mahasiswa</span>
+                    <svg
+                      className="absolute -bottom-2 left-0 w-full h-3 text-primary"
+                      viewBox="0 0 200 12"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M2 8C50 4 100 2 198 8"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </span>
+                </h1>
 
-        <div className="text-center max-w-3xl mx-auto px-4 relative z-10">
-          {/* Logo */}
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-linear-to-br from-primary to-purple-600 shadow-2xl shadow-primary/30 mb-8">
-            <svg
-              className="w-10 h-10 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-              />
-            </svg>
-          </div>
+                {/* Sub-headline */}
+                <p className="text-lg sm:text-xl text-muted-foreground mb-8 leading-relaxed max-w-xl">
+                  Bikin prestasi kamu terdokumentasi dengan baik demi masa depan kamu.
+                </p>
 
-          <Badge className="mb-6 bg-primary/20 text-primary border-primary/30 hover:bg-primary/30">
-            Sistem Pelaporan Prestasi
-          </Badge>
-
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight text-balance">
-            Selamat Datang di{" "}
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-purple-400">
-              {process.env.NEXT_PUBLIC_APP_NAME || "SPPM"}
-            </span>
-          </h1>
-
-          <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed text-pretty">
-            Platform modern untuk mengelola dan melaporkan prestasi mahasiswa
-            dengan mudah, cepat, dan terorganisir.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/login">
-              <Button
-                className="bg-linear-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white shadow-lg shadow-primary/25"
-                size="lg"
-              >
-                <svg
-                  className="w-5 h-5 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-                  />
-                </svg>
-                Masuk ke Sistem
-              </Button>
-            </Link>
-            <Button
-              variant="secondary"
-              size="lg"
-              className="border-border/50 bg-card/50 backdrop-blur-sm hover:bg-card"
-            >
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              Pelajari Lebih Lanjut
-            </Button>
-          </div>
-
-          {/* Feature highlights */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-16">
-            {[
-              {
-                icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
-                title: "Verifikasi Cepat",
-                desc: "Proses verifikasi prestasi yang efisien",
-              },
-              {
-                icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z",
-                title: "Laporan Lengkap",
-                desc: "Analisis dan pelaporan komprehensif",
-              },
-              {
-                icon: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z",
-                title: "Keamanan Data",
-                desc: "Perlindungan data yang terjamin",
-              },
-            ].map((feature, i) => (
-              <div
-                key={i}
-                className="group p-6 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300"
-              >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center mb-4 transition-colors">
-                  <svg
-                    className="w-6 h-6 text-primary"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                {/* CTA Buttons */}
+                <div className="flex flex-col sm:flex-row gap-4 mb-12">
+                  <Link href="/login">
+                    <Button
+                      className="bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg shadow-primary/25 cursor-pointer disabled:cursor-not-allowed w-full sm:w-auto"
+                      size="lg"
+                    >
+                      <svg
+                        className="w-5 h-5 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                        />
+                      </svg>
+                      Masuk ke Sistem
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    className="border-border/50 bg-card/50 backdrop-blur-sm hover:bg-card cursor-pointer disabled:cursor-not-allowed w-full sm:w-auto"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d={feature.icon}
-                    />
-                  </svg>
+                    <svg
+                      className="w-5 h-5 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    Pelajari Lebih Lanjut
+                  </Button>
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-sm text-muted-foreground">{feature.desc}</p>
               </div>
-            ))}
+
+              {/* Right Section - Illustration */}
+              <div className="relative hidden lg:block">
+                <div className="relative">
+                  {/* Background shape */}
+                  <div className="absolute inset-0 bg-primary/5 rounded-3xl transform rotate-6 blur-3xl" />
+                  
+                  {/* Main illustration container */}
+                  <div className="relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-3xl p-8 shadow-2xl">
+                    {/* Mockup Dashboard */}
+                    <div className="space-y-4">
+                      {/* Header */}
+                      <div className="flex items-center justify-between pb-4 border-b border-border/50">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden">
+                            <Image
+                              src="/images/logo.png"
+                              alt="Logo"
+                              width={32}
+                              height={32}
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                          <span className="font-semibold text-foreground">SPPM</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">Dashboard</span>
+                      </div>
+
+                      {/* Stats Cards */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="p-4 rounded-xl bg-primary/10 border border-primary/20">
+                          <p className="text-xs text-muted-foreground mb-1">Total Prestasi</p>
+                          <p className="text-2xl font-bold text-primary">
+                            {isLoadingAchievements ? (
+                              <span className="text-sm">...</span>
+                            ) : (
+                              achievementStats.total
+                            )}
+                          </p>
+                        </div>
+                        <div className="p-4 rounded-xl bg-success/10 border border-success/20">
+                          <p className="text-xs text-muted-foreground mb-1">Terverifikasi</p>
+                          <p className="text-2xl font-bold text-success">
+                            {isLoadingAchievements ? (
+                              <span className="text-sm">...</span>
+                            ) : (
+                              achievementStats.verified
+                            )}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">Status Verifikasi</span>
+                          <span className="font-medium text-foreground">
+                            {isLoadingAchievements ? "..." : `${achievementStats.percentage}%`}
+                          </span>
+                        </div>
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-linear-to-r from-primary to-primary/80 rounded-full transition-all duration-300"
+                            style={{
+                              width: isLoadingAchievements
+                                ? "0%"
+                                : `${achievementStats.percentage}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Action Button */}
+                      <Link href="/login" className="w-full">
+                        <Button
+                          className="w-full bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground cursor-pointer"
+                          size="sm"
+                        >
+                          Kelola Prestasi
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Decorative icons */}
+                  <div className="absolute -top-4 -right-4 w-16 h-16 text-primary/20">
+                    <svg fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
+                  </div>
+                  <div className="absolute -bottom-4 -left-4 w-12 h-12 text-primary/20">
+                    <svg fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
+  // Authenticated user view - Dashboard
   return (
     <div className="min-h-screen bg-background py-8 lg:py-12">
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-purple-600/5 rounded-full blur-[100px]" />
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Welcome header */}
         <div className="mb-10">
           <div className="flex items-center gap-4 mb-2">
-            <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-primary/20 to-purple-600/20 flex items-center justify-center border border-primary/20">
+            <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-primary/20 to-primary/10 flex items-center justify-center border border-primary/20">
               <span className="text-xl font-bold text-primary">
                 {(user?.fullName || user?.username || "U")
                   .charAt(0)
@@ -267,9 +354,9 @@ export default function HomePage() {
           >
             <CardHeader padding="default">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
                   <svg
-                    className="w-5 h-5 text-emerald-400"
+                    className="w-5 h-5 text-success"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -288,12 +375,34 @@ export default function HomePage() {
               </div>
             </CardHeader>
             <CardContent padding="default">
-              <p className="text-muted-foreground mb-6 leading-relaxed">
-                Kelola prestasi Anda, buat laporan baru, dan lihat status
-                verifikasi.
-              </p>
+              {isLoadingAchievements ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-6 h-6 border-2 border-muted rounded-full animate-spin border-t-primary" />
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
+                      <p className="text-xs text-muted-foreground mb-1">Total</p>
+                      <p className="text-xl font-bold text-primary">
+                        {achievementStats.total}
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-xl bg-success/10 border border-success/20">
+                      <p className="text-xs text-muted-foreground mb-1">Terverifikasi</p>
+                      <p className="text-xl font-bold text-success">
+                        {achievementStats.verified}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-muted-foreground mb-6 leading-relaxed text-sm">
+                    Kelola prestasi Anda, buat laporan baru, dan lihat status
+                    verifikasi.
+                  </p>
+                </>
+              )}
               <Link href="/achievements">
-                <Button className="w-full bg-linear-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white">
+                <Button className="w-full bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground cursor-pointer disabled:cursor-not-allowed">
                   <svg
                     className="w-4 h-4 mr-2"
                     fill="none"
@@ -320,9 +429,9 @@ export default function HomePage() {
           >
             <CardHeader padding="default">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-warning/10 flex items-center justify-center">
                   <svg
-                    className="w-5 h-5 text-amber-400"
+                    className="w-5 h-5 text-warning"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -347,7 +456,7 @@ export default function HomePage() {
               <Link href="/reports">
                 <Button
                   variant="secondary"
-                  className="w-full border-border/50 bg-card/50 hover:bg-card"
+                  className="w-full border-border/50 bg-card/50 hover:bg-card cursor-pointer disabled:cursor-not-allowed"
                 >
                   <svg
                     className="w-4 h-4 mr-2"

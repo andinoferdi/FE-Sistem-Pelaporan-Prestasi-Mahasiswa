@@ -104,6 +104,8 @@ export interface AchievementReference {
 
 export type CreateAchievementResponse = ApiResponse<Achievement>;
 
+export type GetAchievementByIDResponse = ApiResponse<Achievement>;
+
 export type UpdateAchievementResponse = ApiResponse<Achievement>;
 
 export type DeleteAchievementResponse = ApiResponse<null>;

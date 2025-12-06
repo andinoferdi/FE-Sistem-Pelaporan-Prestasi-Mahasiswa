@@ -16,10 +16,10 @@ export function Alert({
   const baseStyles = "px-4 py-3 rounded-lg border";
 
   const variants = {
-    success: "bg-green-50 border-green-200 text-green-800",
-    error: "bg-red-50 border-red-200 text-red-800",
-    warning: "bg-yellow-50 border-yellow-200 text-yellow-800",
-    info: "bg-blue-50 border-blue-200 text-blue-800",
+    success: "bg-success/20 border-success/30 text-success",
+    error: "bg-danger/20 border-danger/30 text-danger",
+    warning: "bg-warning/20 border-warning/30 text-warning",
+    info: "bg-info/20 border-info/30 text-info",
   };
 
   return (

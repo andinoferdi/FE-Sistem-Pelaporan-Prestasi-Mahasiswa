@@ -1,81 +1,91 @@
 @import "tailwindcss";
 
 :root {
-  --primary: #a855f7;
+  /* Brand */
+  --primary: #2563eb;
   --primary-foreground: #ffffff;
-  --primary-hover: #9333ea;
-  --background: #0a0a0f;
-  --foreground: #f4f4f5;
-  --card: #12121a;
-  --card-foreground: #f4f4f5;
-  --card-border: #27272a;
-  --muted: #18181b;
-  --muted-foreground: #a1a1aa;
-  --accent: #1e1b4b;
-  --accent-foreground: #c4b5fd;
-  --border: #27272a;
-  --input: #27272a;
-  --ring: #a855f7;
-  --success: #22c55e;
+  --primary-hover: #1d4ed8;
+  /* Surfaces */
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --card-border: #e2e8f0;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  /* Neutrals */
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  /* Accents */
+  --accent: #eff6ff;
+  --accent-foreground: #1e40af;
+  /* Borders / inputs */
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  /* Ring */
+  --ring: #3b82f6;
+  /* Status */
+  --success: #16a34a;
   --success-foreground: #ffffff;
   --warning: #f59e0b;
-  --warning-foreground: #ffffff;
+  --warning-foreground: #111827;
   --danger: #ef4444;
   --danger-foreground: #ffffff;
-  --info: #8b5cf6;
-  --info-foreground: #ffffff;
-  --radius: 0.75rem;
-  --popover: #12121a;
-  --popover-foreground: #f4f4f5;
-  --secondary: #27272a;
-  --secondary-foreground: #f4f4f5;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --chart-1: oklch(0.7 0.25 300);
-  --chart-2: oklch(0.65 0.2 280);
-  --chart-3: oklch(0.6 0.15 260);
-  --chart-4: oklch(0.75 0.2 320);
-  --chart-5: oklch(0.55 0.18 240);
-  --sidebar: #12121a;
-  --sidebar-foreground: #f4f4f5;
-  --sidebar-primary: #a855f7;
+  --info: #0ea5e9;
+  --info-foreground: #ffffff;
+  /* Radius */
+  --radius: 0.875rem;
+  /* Charts (selaras biru) */
+  --chart-1: oklch(0.65 0.2 250);
+  --chart-2: oklch(0.7 0.18 220);
+  --chart-3: oklch(0.68 0.16 240);
+  --chart-4: oklch(0.72 0.14 260);
+  --chart-5: oklch(0.66 0.15 200);
+  /* Sidebar (kalau dipakai) */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #2563eb;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1e1b4b;
-  --sidebar-accent-foreground: #c4b5fd;
-  --sidebar-border: #27272a;
-  --sidebar-ring: #a855f7;
+  --sidebar-accent: #eff6ff;
+  --sidebar-accent-foreground: #1e40af;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #3b82f6;
 }
 
 .dark {
-  --primary: #a855f7;
-  --primary-foreground: #ffffff;
-  --primary-hover: #c084fc;
-  --background: #0a0a0f;
-  --foreground: #f4f4f5;
-  --card: #12121a;
-  --card-foreground: #f4f4f5;
-  --card-border: #27272a;
-  --muted: #18181b;
-  --muted-foreground: #a1a1aa;
-  --accent: #1e1b4b;
-  --accent-foreground: #c4b5fd;
-  --border: #27272a;
-  --input: #27272a;
-  --ring: #a855f7;
-  --popover: #12121a;
-  --popover-foreground: #f4f4f5;
-  --secondary: #27272a;
-  --secondary-foreground: #f4f4f5;
+  --primary: #3b82f6;
+  --primary-foreground: #0c1226;
+  --primary-hover: #60a5fa;
+  --background: #0a0f1a;
+  --foreground: #f8fafc;
+  --card: #0f1729;
+  --card-foreground: #f8fafc;
+  --card-border: #1e293b;
+  --popover: #0f1729;
+  --popover-foreground: #f8fafc;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --secondary: #1e293b;
+  --secondary-foreground: #f8fafc;
+  --accent: #1e3a8a;
+  --accent-foreground: #bfdbfe;
+  --border: #1e293b;
+  --input: #1e293b;
+  --ring: #3b82f6;
   --destructive: #b91c1c;
-  --destructive-foreground: #fef2f2;
-  --sidebar: #12121a;
-  --sidebar-foreground: #f4f4f5;
-  --sidebar-primary: #a855f7;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1e1b4b;
-  --sidebar-accent-foreground: #c4b5fd;
-  --sidebar-border: #27272a;
-  --sidebar-ring: #a855f7;
+  --destructive-foreground: #fff1f2;
+  --sidebar: #0f1729;
+  --sidebar-foreground: #f8fafc;
+  --sidebar-primary: #3b82f6;
+  --sidebar-primary-foreground: #0c1226;
+  --sidebar-accent: #1e3a8a;
+  --sidebar-accent-foreground: #bfdbfe;
+  --sidebar-border: #1e293b;
+  --sidebar-ring: #3b82f6;
 }
 
 @theme inline {
@@ -131,9 +141,10 @@
   }
 }
 
+/* Scrollbar (lebih "clean" di light) */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -141,8 +152,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--muted-foreground);
-  border-radius: 4px;
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #1e3a8a;
 }
 
 ::-webkit-scrollbar-thumb:hover {

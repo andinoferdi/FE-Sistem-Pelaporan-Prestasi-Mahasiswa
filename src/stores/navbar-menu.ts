@@ -7,11 +7,6 @@ export interface NavbarMenuItem {
 
 export const navbarMenu: NavbarMenuItem[] = [
   {
-    label: "Beranda",
-    href: "/",
-    requiresAuth: false,
-  },
-  {
     label: "Prestasi",
     href: "/achievements",
     requiresAuth: true,

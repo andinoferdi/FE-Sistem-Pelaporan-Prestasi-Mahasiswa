@@ -3,6 +3,9 @@ import { ApiResponse } from "@/types/api";
 import {
   CreateAchievementRequest,
   CreateAchievementResponse,
+  UpdateAchievementRequest,
+  UpdateAchievementResponse,
+  GetAchievementByIDResponse,
   SubmitAchievementResponse,
   DeleteAchievementResponse,
   Achievement,
@@ -37,6 +40,24 @@ export const achievementService = {
   async getAchievements(): Promise<ApiResponse<Achievement[]>> {
     const response = await api.get<Achievement[]>("/api/v1/achievements");
     return response;
+  },
+
+  async getAchievementById(id: string): Promise<GetAchievementByIDResponse> {
+    const response = await api.get<GetAchievementByIDResponse["data"]>(
+      `/api/v1/achievements/${id}`
+    );
+    return response as GetAchievementByIDResponse;
+  },
+
+  async updateAchievement(
+    id: string,
+    data: UpdateAchievementRequest
+  ): Promise<UpdateAchievementResponse> {
+    const response = await api.put<UpdateAchievementResponse["data"]>(
+      `/api/v1/achievements/${id}`,
+      data
+    );
+    return response as UpdateAchievementResponse;
   },
 
   async uploadFile(file: File): Promise<ApiResponse<Attachment>> {

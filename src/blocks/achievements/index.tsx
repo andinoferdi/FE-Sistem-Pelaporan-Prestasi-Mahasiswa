@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/stores/auth";
 import { AchievementCard } from "@/components/achievement-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { achievementService } from "@/services/achievement";
-import { Achievement, AchievementStatus } from "@/types/achievement";
+import type { Achievement, AchievementStatus } from "@/types/achievement";
 
-export default function AchievementsPage() {
+const AchievementsPage = () => {
   const router = useRouter();
   const { user, isAuthenticated, isLoading } = useAuth();
   const [achievements, setAchievements] = useState<Achievement[]>([]);
@@ -19,36 +20,31 @@ export default function AchievementsPage() {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push("/login");
-      return;
-    }
+  const canAccess = useMemo(() => {
+    if (!isAuthenticated) return false;
+    return user?.role === "Mahasiswa";
+  }, [isAuthenticated, user?.role]);
 
-    if (isAuthenticated && user?.role !== "Mahasiswa") {
-      router.push("/");
-      return;
-    }
-
-    if (isAuthenticated) {
-      loadAchievements();
-    }
-  }, [isAuthenticated, isLoading, user, router]);
-
-  const loadAchievements = async () => {
+  const loadAchievements = useCallback(async () => {
     setIsLoadingData(true);
     setError("");
 
     try {
       const response = await achievementService.getAchievements();
-      if (response.status === "success" && response.data) {
+      if (response.status !== "success" || !response.data) {
+        setAchievements([]);
+        setStatuses({});
+        return;
+      }
+
         setAchievements(response.data);
         const statusMap: Record<string, AchievementStatus> = {};
-        response.data.forEach((achievement: Achievement & { status?: AchievementStatus }) => {
+      response.data.forEach(
+        (achievement: Achievement & { status?: AchievementStatus }) => {
           statusMap[achievement.id] = achievement.status || "draft";
-        });
+        }
+      );
         setStatuses(statusMap);
-      }
     } catch (err) {
       setError(
         err instanceof Error
@@ -58,17 +54,37 @@ export default function AchievementsPage() {
     } finally {
       setIsLoadingData(false);
     }
-  };
+  }, []);
 
-  const handleUpdate = () => {
+  useEffect(() => {
+    if (isLoading) return;
+
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+
+    if (isAuthenticated && user?.role !== "Mahasiswa") {
+      router.push("/");
+      return;
+    }
+
     loadAchievements();
-  };
+  }, [isAuthenticated, isLoading, loadAchievements, router, user?.role]);
+
+  const handleUpdate = useCallback(() => {
+    loadAchievements();
+  }, [loadAchievements]);
+
+  const handleCreateClick = useCallback(() => {
+    router.push("/achievements/create");
+  }, [router]);
 
   if (isLoading || isLoadingData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
         <div className="text-center">
-          <div className="relative">
+          <div className="relative mx-auto">
             <div className="w-16 h-16 border-4 border-muted rounded-full animate-spin border-t-primary" />
           </div>
           <p className="mt-6 text-muted-foreground font-medium">Memuat...</p>
@@ -77,32 +93,35 @@ export default function AchievementsPage() {
     );
   }
 
-  if (!isAuthenticated) {
-    return null;
-  }
+  if (!isAuthenticated) return null;
+  if (!canAccess) return null;
 
   return (
-    <div className="min-h-screen bg-background py-8 lg:py-12">
+    <div className="min-h-screen bg-background py-6 sm:py-8 lg:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">
+        <header className="mb-6 sm:mb-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight wrap-break-word">
                 Prestasi Saya
               </h1>
-              <p className="text-muted-foreground">
+              <p className="mt-2 text-sm sm:text-base text-muted-foreground wrap-break-word">
                 Kelola dan submit prestasi Anda untuk verifikasi
               </p>
             </div>
             <Button
               variant="primary"
-              onClick={() => router.push("/achievements/create")}
+              onClick={handleCreateClick}
+              aria-label="Tambah prestasi"
+              className="w-full sm:w-auto sm:shrink-0 cursor-pointer"
             >
               <svg
                 className="w-4 h-4 mr-2"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
+                focusable="false"
               >
                 <path
                   strokeLinecap="round"
@@ -114,47 +133,45 @@ export default function AchievementsPage() {
               Tambah Prestasi
             </Button>
           </div>
-        </div>
+        </header>
 
-        {error && (
+        {error ? (
           <div className="mb-6 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive">
             {error}
           </div>
-        )}
+        ) : null}
 
         {achievements.length === 0 ? (
           <Card variant="glass" className="border-border/50">
-            <CardContent padding="default" className="text-center py-12">
-              <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
-                <svg
-                  className="w-8 h-8 text-muted-foreground"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-                  />
-                </svg>
+            <CardContent padding="default" className="text-center py-10 sm:py-12">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4 overflow-hidden">
+                <Image
+                  src="/images/logo.png"
+                  alt="Logo"
+                  width={64}
+                  height={64}
+                  className="w-full h-full object-contain"
+                />
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
+              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">
                 Belum Ada Prestasi
               </h3>
-              <p className="text-muted-foreground mb-6">
+              <p className="text-sm sm:text-base text-muted-foreground mb-6">
                 Mulai dengan menambahkan prestasi pertama Anda
               </p>
               <Button
                 variant="primary"
-                onClick={() => router.push("/achievements/create")}
+                onClick={handleCreateClick}
+                aria-label="Tambah prestasi"
+                className="w-full sm:w-auto"
               >
                 <svg
                   className="w-4 h-4 mr-2"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
                 >
                   <path
                     strokeLinecap="round"
@@ -168,7 +185,7 @@ export default function AchievementsPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 xl:grid-cols-3">
             {achievements.map((achievement) => (
               <AchievementCard
                 key={achievement.id}
@@ -182,5 +199,7 @@ export default function AchievementsPage() {
       </div>
     </div>
   );
-}
+};
+
+export default AchievementsPage;
 

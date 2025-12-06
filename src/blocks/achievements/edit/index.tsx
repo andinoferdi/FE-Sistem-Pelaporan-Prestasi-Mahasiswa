@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, FormEvent, useCallback } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/stores/auth";
 import {
   Card,
@@ -15,26 +15,68 @@ import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { DatePicker } from "@/components/date-picker";
 import { achievementService } from "@/services/achievement";
-import { CreateAchievementRequest, Attachment } from "@/types/achievement";
+import { UpdateAchievementRequest, Attachment, Achievement } from "@/types/achievement";
 
-export default function CreateAchievementPage() {
+export default function EditAchievementPage() {
   const router = useRouter();
+  const params = useParams();
   const { user, isAuthenticated, isLoading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
   const [error, setError] = useState("");
 
-  const [formData, setFormData] = useState<CreateAchievementRequest>({
-    achievementType: "competition",
+  const [formData, setFormData] = useState<UpdateAchievementRequest>({
+    achievementType: undefined,
     title: "",
     description: "",
-    details: {},
+    details: undefined,
     tags: [],
-    points: 0,
+    points: undefined,
   });
 
   const [tagInput, setTagInput] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<Attachment[]>([]);
   const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
+  const [achievement, setAchievement] = useState<Achievement | null>(null);
+
+  const loadAchievement = useCallback(async () => {
+    setIsLoadingData(true);
+    setError("");
+
+    try {
+      const response = await achievementService.getAchievementById(
+        params.id as string
+      );
+      if (response.status === "success" && response.data) {
+        const data = response.data;
+        
+        if (data.status !== "draft") {
+          setError("Prestasi hanya dapat diedit jika status adalah draft.");
+          setIsLoadingData(false);
+          return;
+        }
+
+        setAchievement(data);
+        setFormData({
+          achievementType: data.achievementType,
+          title: data.title,
+          description: data.description,
+          details: data.details,
+          tags: data.tags || [],
+          points: data.points,
+        });
+        setUploadedFiles(data.attachments || []);
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Gagal memuat data prestasi. Silakan coba lagi."
+      );
+    } finally {
+      setIsLoadingData(false);
+    }
+  }, [params.id]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -46,9 +88,13 @@ export default function CreateAchievementPage() {
       router.push("/");
       return;
     }
-  }, [isAuthenticated, isLoading, user, router]);
 
-  if (isLoading) {
+    if (isAuthenticated && params.id) {
+      loadAchievement();
+    }
+  }, [isAuthenticated, isLoading, user, router, params.id, loadAchievement]);
+
+  if (isLoading || isLoadingData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -63,6 +109,28 @@ export default function CreateAchievementPage() {
 
   if (!isAuthenticated || user?.role !== "Mahasiswa") {
     return null;
+  }
+
+  if (!achievement) {
+    return (
+      <div className="min-h-screen bg-background py-8 lg:py-12">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Card variant="glass" className="border-border/50">
+            <CardContent padding="default" className="text-center py-12">
+              <p className="text-muted-foreground mb-4">
+                Prestasi tidak ditemukan atau Anda tidak memiliki akses untuk mengedit.
+              </p>
+              <Button
+                variant="outline"
+                onClick={() => router.push("/achievements")}
+              >
+                Kembali ke Daftar Prestasi
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
   }
 
   const handleChange = (
@@ -192,28 +260,33 @@ export default function CreateAchievementPage() {
     setError("");
     setIsSubmitting(true);
 
-    if (!formData.title.trim()) {
+    if (!formData.title || !formData.title.trim()) {
       setError("Title wajib diisi.");
       setIsSubmitting(false);
       return;
     }
 
-    if (!formData.description.trim()) {
+    if (!formData.description || !formData.description.trim()) {
       setError("Description wajib diisi.");
       setIsSubmitting(false);
       return;
     }
 
-    if (formData.points <= 0) {
+    if (formData.points === undefined || formData.points <= 0) {
       setError("Points harus lebih dari 0.");
       setIsSubmitting(false);
       return;
     }
 
-    const submitData = {
-      ...formData,
+    const submitData: UpdateAchievementRequest = {
+      achievementType: formData.achievementType,
+      title: formData.title,
+      description: formData.description,
       attachments: uploadedFiles,
-      details: {
+      tags: formData.tags,
+      points: formData.points,
+      details: formData.details
+        ? {
         ...formData.details,
         eventDate: formData.details?.eventDate
           ? convertDateToISO(formData.details.eventDate as string)
@@ -231,17 +304,18 @@ export default function CreateAchievementPage() {
               ),
             }
           : undefined,
-      },
+          }
+        : undefined,
     };
 
     try {
-      await achievementService.createAchievement(submitData);
-      router.push("/achievements");
+      await achievementService.updateAchievement(params.id as string, submitData);
+      router.push(`/achievements/${params.id}`);
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
-          : "Gagal membuat prestasi. Silakan coba lagi."
+          : "Gagal mengupdate prestasi. Silakan coba lagi."
       );
     } finally {
       setIsSubmitting(false);
@@ -582,10 +656,10 @@ export default function CreateAchievementPage() {
             Kembali
           </Button>
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            Tambah Prestasi Baru
+            Edit Prestasi
           </h1>
           <p className="text-muted-foreground">
-            Isi form di bawah untuk menambahkan prestasi baru
+            Edit informasi prestasi Anda di bawah
           </p>
         </div>
 
@@ -611,7 +685,7 @@ export default function CreateAchievementPage() {
                 <select
                   className="w-full px-4 py-3 bg-card text-foreground border-2 rounded-xl border-border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   name="achievementType"
-                  value={formData.achievementType}
+                  value={formData.achievementType || ""}
                   onChange={handleChange}
                   required
                 >
@@ -651,13 +725,13 @@ export default function CreateAchievementPage() {
                 label="Poin Prestasi *"
                 name="points"
                 type="number"
-                value={formData.points === 0 ? "" : String(formData.points).replace(/^0+/, "") || ""}
+                value={formData.points === undefined || formData.points === 0 ? "" : String(formData.points).replace(/^0+/, "") || ""}
                 onChange={(e) => {
                   const value = e.target.value.replace(/^0+/, "");
                   if (value === "") {
                     setFormData((prev) => ({
                       ...prev,
-                      points: 0,
+                      points: undefined,
                     }));
                     return;
                   }
@@ -893,7 +967,7 @@ export default function CreateAchievementPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => router.push("/achievements")}
+                  onClick={() => router.push(`/achievements/${params.id}`)}
                   className="flex-1"
                   disabled={isSubmitting}
                 >
@@ -925,7 +999,7 @@ export default function CreateAchievementPage() {
                           d="M5 13l4 4L19 7"
                         />
                       </svg>
-                      Simpan Prestasi
+                      Update Prestasi
                     </>
                   )}
                 </Button>
