@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useAuth } from "@/stores/auth";
 import { navbarMenu } from "@/stores/navbar-menu";
 import { Button } from "@/components/ui/button";
-import { UINavbar, UINavbarContainer } from "@/components/ui/ui-navbar";
+import { UINavbar, UINavbarContainer } from "@/components/home/ui/ui-navbar";
 
 export function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();

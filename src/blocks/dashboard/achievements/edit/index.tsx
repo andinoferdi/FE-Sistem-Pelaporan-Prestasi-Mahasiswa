@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { DatePicker } from "@/components/date-picker";
+import { DatePicker } from "@/components/dashboard/date-picker";
 import { achievementService } from "@/services/achievement";
 import { UpdateAchievementRequest, Attachment, Achievement } from "@/types/achievement";
 
@@ -122,7 +122,7 @@ export default function EditAchievementPage() {
               </p>
               <Button
                 variant="outline"
-                onClick={() => router.push("/achievements")}
+                onClick={() => router.push("/dashboard/achievements")}
               >
                 Kembali ke Daftar Prestasi
               </Button>
@@ -310,7 +310,7 @@ export default function EditAchievementPage() {
 
     try {
       await achievementService.updateAchievement(params.id as string, submitData);
-      router.push(`/achievements/${params.id}`);
+      router.push(`/dashboard/achievements/${params.id}`);
     } catch (err) {
       setError(
         err instanceof Error
@@ -967,7 +967,7 @@ export default function EditAchievementPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => router.push(`/achievements/${params.id}`)}
+                  onClick={() => router.push(`/dashboard/achievements/${params.id}`)}
                   className="flex-1"
                   disabled={isSubmitting}
                 >

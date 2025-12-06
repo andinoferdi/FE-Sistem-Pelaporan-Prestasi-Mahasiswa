@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { Poppins, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/stores/auth";
-import { LayoutWrapper } from "@/components/layout-wrapper";
+import { LayoutWrapper } from "@/components/home/layout-wrapper";
 
 const poppins = Poppins({
   variable: "--font-poppins",

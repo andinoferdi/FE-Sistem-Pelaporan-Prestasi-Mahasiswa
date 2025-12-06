@@ -70,5 +70,13 @@ export const achievementService = {
     );
     return response;
   },
+
+  async getStats(): Promise<ApiResponse<{ total: number; verified: number; percentage: number }>> {
+    const response = await api.get<{ total: number; verified: number; percentage: number }>(
+      "/api/v1/achievements/stats",
+      { skipAuth: true }
+    );
+    return response;
+  },
 };
 

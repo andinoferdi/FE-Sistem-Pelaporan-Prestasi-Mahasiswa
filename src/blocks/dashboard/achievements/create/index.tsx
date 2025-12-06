@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { DatePicker } from "@/components/date-picker";
+import { DatePicker } from "@/components/dashboard/date-picker";
 import { achievementService } from "@/services/achievement";
 import { CreateAchievementRequest, Attachment } from "@/types/achievement";
 
@@ -236,7 +236,7 @@ export default function CreateAchievementPage() {
 
     try {
       await achievementService.createAchievement(submitData);
-      router.push("/achievements");
+      router.push("/dashboard/achievements");
     } catch (err) {
       setError(
         err instanceof Error

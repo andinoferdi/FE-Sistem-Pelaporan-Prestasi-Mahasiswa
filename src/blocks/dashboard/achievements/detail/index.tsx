@@ -165,7 +165,7 @@ export default function DetailAchievementPage() {
               <Button
                 variant="outline"
                 className="mt-4 cursor-pointer disabled:cursor-not-allowed"
-                onClick={() => router.push("/achievements")}
+                onClick={() => router.push("/dashboard/achievements")}
               >
                 Kembali ke Daftar Prestasi
               </Button>
@@ -437,7 +437,7 @@ export default function DetailAchievementPage() {
                 <div className="flex gap-2 pt-4">
                   <Button
                     variant="primary"
-                    onClick={() => router.push(`/achievements/${achievement.id}/edit`)}
+                    onClick={() => router.push(`/dashboard/achievements/${achievement.id}/edit`)}
                     className="cursor-pointer disabled:cursor-not-allowed"
                   >
                     <svg

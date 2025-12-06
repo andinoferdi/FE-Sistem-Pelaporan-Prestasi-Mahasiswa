@@ -8,7 +8,7 @@ import {
   UIFooterContainer,
   UIFooterLink,
   UIFooterSection,
-} from "@/components/ui/ui-footer";
+} from "@/components/home/ui/ui-footer";
 
 type SocialItem = { label: string; href: string; svgPath: string };
 
@@ -137,7 +137,7 @@ export function Footer() {
                   </li>
                   <li>
                     <UIFooterLink
-                      href="/achievements"
+                      href="/dashboard/achievements"
                       ariaLabel="Buka halaman prestasi"
                     >
                       Prestasi Saya
@@ -145,7 +145,7 @@ export function Footer() {
                   </li>
                   <li>
                     <UIFooterLink
-                      href="/achievements/create"
+                      href="/dashboard/achievements/create"
                       ariaLabel="Tambah prestasi baru"
                     >
                       Tambah Prestasi

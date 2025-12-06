@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/stores/auth";
-import { AchievementCard } from "@/components/achievement-card";
+import { AchievementCard } from "@/components/dashboard/achievement-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { achievementService } from "@/services/achievement";
@@ -79,7 +79,7 @@ const AchievementsPage = () => {
   }, [loadAchievements]);
 
   const handleCreateClick = useCallback(() => {
-    router.push("/achievements/create");
+    router.push("/dashboard/achievements/create");
   }, [router]);
 
   if (isLoading || isLoadingData) {

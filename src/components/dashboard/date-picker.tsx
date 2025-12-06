@@ -18,11 +18,9 @@ import {
   isSameDay,
   isDateInRange,
   isDateDisabled,
-} from "@/components/ui/ui-date-picker";
+} from "@/components/dashboard/ui/ui-date-picker";
 
-// ============================================
-// Types
-// ============================================
+
 
 type PickerMode = "days" | "months" | "years";
 type SelectionMode = "single" | "range";
@@ -30,34 +28,25 @@ type SelectionMode = "single" | "range";
 interface DatePickerProps {
   value?: Date | null;
   onChange?: (date: Date | null) => void;
-  // Range selection
   startDate?: Date | null;
   endDate?: Date | null;
   onRangeChange?: (start: Date | null, end: Date | null) => void;
   selectionMode?: SelectionMode;
-  // Constraints
   minDate?: Date;
   maxDate?: Date;
   disabledDates?: Date[];
-  // Display
   placeholder?: string;
   format?: (date: Date) => string;
-  // Styling
   className?: string;
   triggerClassName?: string;
   calendarClassName?: string;
-  // State
   disabled?: boolean;
   readOnly?: boolean;
-  // Features
   showQuickActions?: boolean;
   showOutsideDays?: boolean;
   closeOnSelect?: boolean;
 }
 
-// ============================================
-// Default Formatter
-// ============================================
 
 const defaultFormat = (date: Date): string => {
   return date.toLocaleDateString("en-US", {
@@ -68,9 +57,6 @@ const defaultFormat = (date: Date): string => {
   });
 };
 
-// ============================================
-// DatePicker Component
-// ============================================
 
 export function DatePicker({
   value,
@@ -93,9 +79,7 @@ export function DatePicker({
   showOutsideDays = true,
   closeOnSelect = true,
 }: DatePickerProps) {
-  // ========================================
-  // State
-  // ========================================
+
 
   const [isOpen, setIsOpen] = React.useState(false);
   const [pickerMode, setPickerMode] = React.useState<PickerMode>("days");
@@ -105,7 +89,6 @@ export function DatePicker({
     return new Date();
   });
 
-  // Range selection state
   const [rangeStart, setRangeStart] = React.useState<Date | null>(
     startDate || null
   );
@@ -114,11 +97,6 @@ export function DatePicker({
 
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  // ========================================
-  // Effects
-  // ========================================
-
-  // Sync external value changes
   React.useEffect(() => {
     if (value) setViewDate(new Date(value));
   }, [value]);
@@ -128,7 +106,6 @@ export function DatePicker({
     if (endDate) setRangeEnd(endDate);
   }, [startDate, endDate]);
 
-  // Close on outside click
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -147,9 +124,6 @@ export function DatePicker({
     }
   }, [isOpen]);
 
-  // ========================================
-  // Handlers
-  // ========================================
 
   const handlePrevMonth = () => {
     setViewDate((prev) => {
