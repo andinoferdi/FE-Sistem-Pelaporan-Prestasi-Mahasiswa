@@ -25,6 +25,7 @@ export function AchievementCard({ achievement, status, onUpdate }: AchievementCa
 
   const isBusy = isSubmitting || isDeleting;
   const isDraft = status === "draft";
+  const isDeleted = status === "deleted";
 
   const statusBadgeVariant = useMemo(() => {
     switch (status) {
@@ -36,6 +37,8 @@ export function AchievementCard({ achievement, status, onUpdate }: AchievementCa
         return "success";
       case "rejected":
         return "danger";
+      case "deleted":
+        return "outline";
       default:
         return "outline";
     }
@@ -51,6 +54,8 @@ export function AchievementCard({ achievement, status, onUpdate }: AchievementCa
         return "Terverifikasi";
       case "rejected":
         return "Ditolak";
+      case "deleted":
+        return "Dihapus";
       default:
         return status;
     }
@@ -187,7 +192,7 @@ export function AchievementCard({ achievement, status, onUpdate }: AchievementCa
             </svg>
             Lihat Detail
           </Button>
-          {isDraft ? (
+          {isDraft && !isDeleted ? (
             <>
               <Button
                 type="button"

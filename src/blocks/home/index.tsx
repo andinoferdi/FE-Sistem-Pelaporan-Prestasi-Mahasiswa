@@ -17,7 +17,8 @@ export default function HomePage() {
   const [isLoadingAchievements, setIsLoadingAchievements] = useState(false);
 
   const loadAchievements = useCallback(async () => {
-    if (!isAuthenticated || user?.role !== "Mahasiswa") return;
+    const allowedRoles = ["Mahasiswa", "Dosen Wali", "Admin"];
+    if (!isAuthenticated || !user?.role || !allowedRoles.includes(user.role)) return;
     
     setIsLoadingAchievements(true);
     try {
@@ -40,7 +41,8 @@ export default function HomePage() {
   }, [isAuthenticated, user?.role]);
 
   useEffect(() => {
-    if (isAuthenticated && user?.role === "Mahasiswa") {
+    const allowedRoles = ["Mahasiswa", "Dosen Wali", "Admin"];
+    if (isAuthenticated && user?.role && allowedRoles.includes(user.role)) {
       loadAchievements();
     }
   }, [isAuthenticated, user?.role, loadAchievements]);

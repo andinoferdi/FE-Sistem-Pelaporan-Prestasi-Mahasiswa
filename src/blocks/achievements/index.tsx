@@ -22,7 +22,8 @@ const AchievementsPage = () => {
 
   const canAccess = useMemo(() => {
     if (!isAuthenticated) return false;
-    return user?.role === "Mahasiswa";
+    const allowedRoles = ["Mahasiswa", "Dosen Wali", "Admin"];
+    return user?.role && allowedRoles.includes(user.role);
   }, [isAuthenticated, user?.role]);
 
   const loadAchievements = useCallback(async () => {
@@ -64,7 +65,8 @@ const AchievementsPage = () => {
       return;
     }
 
-    if (isAuthenticated && user?.role !== "Mahasiswa") {
+    const allowedRoles = ["Mahasiswa", "Dosen Wali", "Admin"];
+    if (isAuthenticated && user?.role && !allowedRoles.includes(user.role)) {
       router.push("/");
       return;
     }
@@ -103,35 +105,37 @@ const AchievementsPage = () => {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0 flex-1">
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight wrap-break-word">
-                Prestasi Saya
+                {user?.role === "Mahasiswa" ? "Prestasi Saya" : user?.role === "Dosen Wali" ? "Prestasi Mahasiswa Bimbingan" : "Semua Prestasi"}
               </h1>
               <p className="mt-2 text-sm sm:text-base text-muted-foreground wrap-break-word">
-                Kelola dan submit prestasi Anda untuk verifikasi
+                {user?.role === "Mahasiswa" ? "Kelola dan submit prestasi Anda untuk verifikasi" : user?.role === "Dosen Wali" ? "Lihat dan verifikasi prestasi mahasiswa bimbingan Anda" : "Lihat semua prestasi mahasiswa"}
               </p>
             </div>
-            <Button
-              variant="primary"
-              onClick={handleCreateClick}
-              aria-label="Tambah prestasi"
-              className="w-full sm:w-auto sm:shrink-0 cursor-pointer"
-            >
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                focusable="false"
+            {user?.role === "Mahasiswa" && (
+              <Button
+                variant="primary"
+                onClick={handleCreateClick}
+                aria-label="Tambah prestasi"
+                className="w-full sm:w-auto sm:shrink-0 cursor-pointer"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
-              Tambah Prestasi
-            </Button>
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
+                </svg>
+                Tambah Prestasi
+              </Button>
+            )}
           </div>
         </header>
 

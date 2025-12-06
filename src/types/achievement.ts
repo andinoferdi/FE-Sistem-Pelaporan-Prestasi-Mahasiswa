@@ -8,7 +8,7 @@ export type AchievementType =
   | "certification"
   | "other";
 
-export type AchievementStatus = "draft" | "submitted" | "verified" | "rejected";
+export type AchievementStatus = "draft" | "submitted" | "verified" | "rejected" | "deleted";
 
 export type CompetitionLevel =
   | "international"

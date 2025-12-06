@@ -46,7 +46,8 @@ export default function DetailAchievementPage() {
       return;
     }
 
-    if (isAuthenticated && user?.role !== "Mahasiswa") {
+    const allowedRoles = ["Mahasiswa", "Dosen Wali", "Admin"];
+    if (isAuthenticated && user?.role && !allowedRoles.includes(user.role)) {
       router.push("/");
       return;
     }
@@ -66,6 +67,8 @@ export default function DetailAchievementPage() {
         return "success";
       case "rejected":
         return "danger";
+      case "deleted":
+        return "outline";
       default:
         return "outline";
     }
@@ -81,6 +84,8 @@ export default function DetailAchievementPage() {
         return "Terverifikasi";
       case "rejected":
         return "Ditolak";
+      case "deleted":
+        return "Dihapus";
       default:
         return status;
     }
@@ -92,6 +97,43 @@ export default function DetailAchievementPage() {
       month: "long",
       day: "numeric",
     });
+  };
+
+  const getFileDownloadUrl = (fileUrl: string): string => {
+    if (fileUrl.startsWith("http")) {
+      return fileUrl;
+    }
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+    return `${apiBaseUrl}${fileUrl}`;
+  };
+
+  const handleDownload = async (fileUrl: string, fileName: string) => {
+    try {
+      const fullUrl = getFileDownloadUrl(fileUrl);
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      
+      const response = await fetch(fullUrl, {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error("Gagal mengunduh file");
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Gagal mengunduh file");
+    }
   };
 
   if (isLoading || isLoadingData) {
@@ -377,21 +419,21 @@ export default function DetailAchievementPage() {
                             {attachment.fileName}
                           </span>
                         </div>
-                        <a
-                          href={attachment.fileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-primary hover:underline cursor-pointer"
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDownload(attachment.fileUrl, attachment.fileName)}
+                          className="cursor-pointer"
                         >
                           Unduh
-                        </a>
+                        </Button>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              {achievement.status === "draft" && (
+              {achievement.status === "draft" && user?.role === "Mahasiswa" && (
                 <div className="flex gap-2 pt-4">
                   <Button
                     variant="primary"
