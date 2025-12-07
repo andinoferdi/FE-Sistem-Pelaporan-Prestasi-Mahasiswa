@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Poppins, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/stores/auth";
+import { QueryProvider } from "@/providers/query-provider";
 import { LayoutWrapper } from "@/components/home/layout-wrapper";
 
 const poppins = Poppins({
@@ -35,9 +36,11 @@ export default function RootLayout({
       <body
         className={`${poppins.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
-        <AuthProvider>
-          <LayoutWrapper>{children}</LayoutWrapper>
-        </AuthProvider>
+        <QueryProvider>
+          <AuthProvider>
+            <LayoutWrapper>{children}</LayoutWrapper>
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );

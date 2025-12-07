@@ -28,7 +28,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
+} from "@/components/dashboard/ui/pagination";
 import {
   Table,
   TableBody,
@@ -37,8 +37,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import axios from "@/lib/axios";
+import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { PaginatedResponse } from "@/types/common";
 import { useQuery } from "@tanstack/react-query";
 import {
   ColumnDef,
@@ -48,11 +49,26 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-import { ScrollArea, ScrollBar } from "./ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
 import { ChevronDown, Loader2, Settings2 } from "lucide-react";
 
-// Custom hook to debounce values
+interface ClientDateFormatterProps {
+  date: string | Date;
+  formatString?: string;
+}
+
+const ClientDateFormatter = ({
+  date,
+  formatString = "EEEE, dd MMMM yyyy",
+}: ClientDateFormatterProps) => {
+  const formattedDate = useMemo(() => {
+    return format(new Date(date), formatString);
+  }, [date, formatString]);
+
+  return <p className="text-sm font-medium">{formattedDate}</p>;
+};
+
 const useDebounce = <T,>(value: T, delay: number): T => {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
@@ -69,41 +85,39 @@ const useDebounce = <T,>(value: T, delay: number): T => {
   return debouncedValue;
 };
 
-// Define types for the component props
 interface PaginateTableProps<TData> {
-  columns: ColumnDef<TData, any>[];
+  columns: ColumnDef<TData, unknown>[];
   url: string;
   id: string;
-  payload?: Record<string, any>;
+  payload?: Record<string, unknown>;
   massSelect?: string[] | number[];
-  onChangeMassSelect?: (values: any) => void;
+  onChangeMassSelect?: (values: string[] | number[]) => void;
   massSelectField?: string;
   Plugin?: () => ReactNode;
   grouped?: boolean;
-  queryKey?: any[];
+  queryKey?: unknown[];
   perPage?: number;
-  // When used inside another <form>, avoid nested <form> to prevent hydration errors
   searchIsForm?: boolean;
   onSuccess?: () => void;
 }
 
-// Define types for the component ref
 export interface PaginateTableRef {
   refetch: () => void;
-  data: any;
+  data: PaginationData | undefined;
 }
 
-// Define types for pagination data
 interface PaginationData {
-  data: any[];
-  from?: number;
-  to?: number;
-  total?: number;
+  data: unknown[];
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
   current_page?: number;
   last_page?: number;
 }
 
-// Column visibility component
 interface DataTableViewOptionsProps<TData> {
   table: ReturnType<typeof useReactTable<TData>>;
 }
@@ -165,7 +179,7 @@ const LoadingOverlay = ({ isLoading }: { isLoading: boolean }) => {
   );
 };
 
-const perOptions = [
+const limitOptions = [
   { value: 5, label: "5" },
   { value: 10, label: "10" },
   { value: 20, label: "20" },
@@ -173,424 +187,483 @@ const perOptions = [
   { value: 100, label: "100" },
 ];
 
-const PaginateTable = memo(
-  forwardRef<PaginateTableRef, PaginateTableProps<any>>(
-    (
-      {
-        columns,
-        url,
-        id,
-        payload = {},
-        massSelect = [],
-        onChangeMassSelect = () => {
-          // No-op default implementation
-        },
-        massSelectField = "uuid",
-        Plugin = () => null,
-        grouped = false,
-        queryKey,
-        perPage = 10,
-        searchIsForm = true,
-        onSuccess = () => ({}),
-      },
-      ref
-    ) => {
-      const [search, setSearch] = useState("");
-      const debouncedSearch = useDebounce(search, 500);
-      const [page, setPage] = useState(1);
-      const [per, setPer] = useState(perPage);
-      const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-        {}
+const buildQueryString = (params: Record<string, unknown>): string => {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      searchParams.append(key, String(value));
+    }
+  });
+  return searchParams.toString();
+};
+
+function PaginateTableComponent<TData = unknown>(
+  {
+    columns,
+    url,
+    id,
+    payload = {},
+    massSelect = [],
+    onChangeMassSelect = () => {},
+    massSelectField = "uuid",
+    Plugin = () => null,
+    grouped = false,
+    queryKey,
+    perPage = 10,
+    searchIsForm = true,
+    onSuccess = () => ({}),
+  }: PaginateTableProps<TData>,
+  ref: React.ForwardedRef<PaginateTableRef>
+) {
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(perPage);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+
+  const { data, isFetching, refetch } = useQuery<PaginationData>({
+    queryKey: queryKey
+      ? queryKey
+      : [url, payload, page, limit, debouncedSearch],
+    queryFn: async () => {
+      const queryParams = {
+        search: debouncedSearch,
+        page: String(page),
+        limit: String(limit),
+        ...payload,
+      };
+      const queryString = buildQueryString(queryParams);
+      const urlWithQuery = queryString ? `${url}?${queryString}` : url;
+
+      const response = await api.get<PaginatedResponse<unknown> | unknown[]>(
+        urlWithQuery
       );
-      const [isSearching, setIsSearching] = useState(false);
 
-      const { data, isFetching, refetch } = useQuery<PaginationData>({
-        queryKey: queryKey ? queryKey : [url, payload],
-        queryFn: () =>
-          axios
-            .get(url, {
-              params: {
-                search: debouncedSearch,
-                page,
-                per: Number(per),
-                // Mirror param for Laravel-style pagination
-                per_page: Number(per),
-                ...payload,
-              },
-            })
-            .then((res) => res.data),
-        placeholderData: { data: [] },
-        onSuccess: onSuccess,
-      });
+      if (!response.data) {
+        return { data: [] };
+      }
 
-      useImperativeHandle(ref, () => ({
-        refetch,
-        data,
-      }));
+      if (Array.isArray(response.data)) {
+        return {
+          data: response.data,
+        };
+      }
 
-      const table = useReactTable({
-        data: data?.data || [],
-        columns,
-        getCoreRowModel: getCoreRowModel(),
-        onColumnVisibilityChange: setColumnVisibility,
-        state: {
-          columnVisibility,
-        },
-      });
+      if (
+        response.data &&
+        typeof response.data === "object" &&
+        "data" in response.data &&
+        "pagination" in response.data
+      ) {
+        const paginatedData = response.data as PaginatedResponse<unknown>;
+        return {
+          data: paginatedData.data,
+          pagination: paginatedData.pagination,
+        };
+      }
 
-      useEffect(() => {
-        refetch();
-      }, [debouncedSearch, per, page, refetch]);
+      return { data: [] };
+    },
+    placeholderData: { data: [] },
+  });
 
-      // Handle search input changes
-      useEffect(() => {
-        setIsSearching(true);
-        const timer = setTimeout(() => {
-          setIsSearching(false);
-        }, 500);
-        return () => clearTimeout(timer);
-      }, [search]);
+  useEffect(() => {
+    if (data && onSuccess) {
+      onSuccess();
+    }
+  }, [data, onSuccess]);
 
-      const pagination = useMemo(() => {
-        const lastPage = data?.last_page || 0;
-        const limit = lastPage <= page + 1 ? 5 : 2;
-        return Array.from({ length: lastPage }, (_, i) => i + 1).filter(
-          (i) =>
-            i >= (page < 3 ? 3 : page) - limit &&
-            i <= (page < 3 ? 3 : page) + limit
-        );
-      }, [data?.current_page, page, data?.last_page]);
+  useImperativeHandle(ref, () => ({
+    refetch,
+    data,
+  }));
 
-      const handleMassSelect = useCallback(
-        (checked: boolean) => {
-          if (checked && data?.data) {
-            onChangeMassSelect(
-              data.data.map((item) =>
-                isNaN(item[massSelectField])
-                  ? String(item[massSelectField])
-                  : item[massSelectField]
-              )
+  const table = useReactTable<TData>({
+    data: (data?.data || []) as TData[],
+    columns: columns as ColumnDef<TData, unknown>[],
+    getCoreRowModel: getCoreRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
+    state: {
+      columnVisibility,
+    },
+  });
+
+  useEffect(() => {
+    refetch();
+  }, [debouncedSearch, limit, page, refetch]);
+
+  const pagination = useMemo(() => {
+    const totalPages = data?.pagination?.totalPages || data?.last_page || 0;
+    const currentPage = data?.pagination?.page || data?.current_page || page;
+    const pageLimit = totalPages <= currentPage + 1 ? 5 : 2;
+    return Array.from({ length: totalPages }, (_, i) => i + 1).filter(
+      (i) =>
+        i >= (currentPage < 3 ? 3 : currentPage) - pageLimit &&
+        i <= (currentPage < 3 ? 3 : currentPage) + pageLimit
+    );
+  }, [data?.pagination, data?.current_page, data?.last_page, page]);
+
+  const handleMassSelect = useCallback(
+    (checked: boolean) => {
+      const items = data?.data || [];
+      if (checked && items.length > 0) {
+        const selectedValues: (string | number)[] = [];
+        items.forEach((item) => {
+          if (item && typeof item === "object" && massSelectField in item) {
+            const value = (item as Record<string, unknown>)[massSelectField];
+            selectedValues.push(
+              isNaN(Number(value)) ? String(value) : Number(value)
             );
-          } else {
-            onChangeMassSelect([]);
           }
-        },
-        [data?.data, massSelectField, onChangeMassSelect]
-      );
+        });
+        onChangeMassSelect(selectedValues as string[] | number[]);
+      } else {
+        onChangeMassSelect([]);
+      }
+    },
+    [data?.data, massSelectField, onChangeMassSelect]
+  );
 
-      const handleSearch = useCallback(
-        (e: React.FormEvent) => {
-          e.preventDefault();
-          refetch();
-        },
-        [refetch]
-      );
+  const handleSearch = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      refetch();
+    },
+    [refetch]
+  );
 
-      // Determine if we should show the loading overlay
-      const showLoading = isFetching;
+  // Determine if we should show the loading overlay
+  const showLoading = isFetching;
 
-      return (
-        <Card id={id} className="relative w-full">
-          <CardContent>
-            <LoadingOverlay isLoading={showLoading} />
-            <div className="mb-4 flex flex-wrap justify-between gap-2 pt-4">
-              <div className="flex items-center gap-2">
-                <DataTableViewOptions table={table} />
-                {searchIsForm ? (
-                  <form onSubmit={handleSearch} className="flex">
-                    <Input
-                      type="search"
-                      className="w-full"
-                      placeholder="Cari ..."
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                    />
-                  </form>
-                ) : (
-                  <div className="flex">
-                    <Input
-                      type="search"
-                      className="w-full"
-                      placeholder="Cari ..."
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                    />
-                  </div>
-                )}
+  return (
+    <Card id={id} className="relative w-full">
+      <CardContent>
+        <LoadingOverlay isLoading={showLoading} />
+        <div className="mb-4 flex flex-wrap justify-between gap-2 pt-4">
+          <div className="flex items-center gap-2">
+            <DataTableViewOptions table={table} />
+            {searchIsForm ? (
+              <form onSubmit={handleSearch} className="flex">
+                <Input
+                  type="search"
+                  className="w-full"
+                  placeholder="Cari ..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </form>
+            ) : (
+              <div className="flex">
+                <Input
+                  type="search"
+                  className="w-full"
+                  placeholder="Cari ..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
               </div>
-              <div className="flex items-center gap-4">
-                <Plugin />
-              </div>
-            </div>
-            <div className="rounded-md border">
-              <ScrollArea className="w-full max-w-full overflow-x-auto">
-                <Table>
-                  <TableHeader className="bg-muted">
-                    {table.getHeaderGroups().map((headerGroup) => (
-                      <TableRow key={headerGroup.id}>
-                        {headerGroup.headers.map((header) => (
-                          <TableHead
-                            key={header.id}
-                            className="py-4 font-medium"
-                            style={(header.column.columnDef.meta as any)?.style}
-                          >
-                            {header.column.columnDef.header === "check" &&
-                            Boolean(data?.data?.length) ? (
-                              <div className="flex h-4 w-4 items-center">
-                                <Checkbox
-                                  className="h-5 w-5 cursor-pointer"
-                                  checked={
-                                    massSelect?.length === data?.data?.length
-                                  }
-                                  onCheckedChange={(checked) =>
-                                    handleMassSelect(checked as boolean)
-                                  }
-                                />
-                              </div>
-                            ) : header.isPlaceholder ? null : (
-                              flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )
-                            )}
-                          </TableHead>
-                        ))}
-                      </TableRow>
+            )}
+          </div>
+          <div className="flex items-center gap-4">
+            <Plugin />
+          </div>
+        </div>
+        <div className="rounded-md border">
+          <ScrollArea className="w-full max-w-full overflow-x-auto">
+            <Table>
+              <TableHeader className="bg-muted">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <TableHead
+                        key={header.id}
+                        className="py-4 font-medium"
+                        style={
+                          (
+                            header.column.columnDef.meta as {
+                              style?: React.CSSProperties;
+                            }
+                          )?.style
+                        }
+                      >
+                        {header.column.columnDef.header === "check" &&
+                        Boolean((data?.data || []).length) ? (
+                          <div className="flex h-4 w-4 items-center">
+                            <Checkbox
+                              className="h-5 w-5 cursor-pointer"
+                              checked={
+                                massSelect?.length === (data?.data || []).length
+                              }
+                              onCheckedChange={(checked) =>
+                                handleMassSelect(checked as boolean)
+                              }
+                            />
+                          </div>
+                        ) : header.isPlaceholder ? null : (
+                          flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )
+                        )}
+                      </TableHead>
                     ))}
-                  </TableHeader>
-                  <TableBody>
-                    {table.getRowModel().rows?.length ? (
-                      table.getRowModel().rows.map((row, idx) => (
-                        <TableRow
-                          key={
-                            grouped
-                              ? `row.${
-                                  row.original.type === "group"
-                                    ? row.original.date
-                                    : row.original.data?.uuid ?? idx
-                                }`
-                              : `row.${
-                                  row.original.uuid ?? row.original.id ?? idx
-                                }`
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row, idx) => (
+                    <TableRow
+                      key={
+                        grouped
+                          ? `row.${
+                              (
+                                row.original as {
+                                  type?: string;
+                                  date?: string;
+                                  data?: { uuid?: string };
+                                }
+                              ).type === "group"
+                                ? (row.original as { date: string }).date
+                                : (row.original as { data?: { uuid?: string } })
+                                    .data?.uuid ?? idx
+                            }`
+                          : `row.${
+                              (row.original as { uuid?: string }).uuid ??
+                              (row.original as { id?: string }).id ??
+                              idx
+                            }`
+                      }
+                    >
+                      {(row.original as { type?: string }).type === "group" ? (
+                        <TableCell
+                          key={`cell.${row.id}.${
+                            (
+                              row.original as {
+                                type?: string;
+                                date?: string;
+                                data?: { uuid?: string; id?: string };
+                              }
+                            ).type === "group"
+                              ? (row.original as { date: string }).date
+                              : (
+                                  row.original as {
+                                    data?: { uuid?: string; id?: string };
+                                  }
+                                ).data?.uuid ??
+                                (row.original as { data?: { id?: string } })
+                                  .data?.id ??
+                                idx
+                          }`}
+                          className={`py-4 ${
+                            (row.original as { type?: string }).type === "group"
+                              ? "bg-blue-600/10 dark:bg-blue-300/10"
+                              : ""
+                          }`}
+                          colSpan={
+                            (row.original as { type?: string }).type === "group"
+                              ? columns.length
+                              : 1
                           }
                         >
-                          {row.original.type === "group" ? (
-                            <TableCell
-                              key={`cell.${row.id}.${
-                                row.original.type === "group"
-                                  ? row.original.date
-                                  : row.original.data?.uuid ??
-                                    row.original.data?.id ??
-                                    idx
-                              }`}
-                              className={`py-4 ${
-                                row.original.type === "group"
-                                  ? "bg-blue-600/10 dark:bg-blue-300/10"
-                                  : ""
-                              }`}
-                              colSpan={
-                                row.original.type === "group"
-                                  ? columns.length
-                                  : 1
+                          <div className="flex flex-col gap-2">
+                            <ClientDateFormatter
+                              date={
+                                (row.original as { date: string | Date }).date
                               }
-                            >
-                              <div className="flex flex-col gap-2">
-                                {/* Patch: Client-only date formatting to prevent hydration mismatch */}
-                                {(() => {
-                                  const [formattedDate, setFormattedDate] =
-                                    useState("");
-                                  useEffect(() => {
-                                    setFormattedDate(
-                                      format(
-                                        new Date(row.original.date),
-                                        "EEEE, dd MMMM yyyy"
-                                      )
-                                    );
-                                  }, [row.original.date]);
-                                  return (
-                                    <p className="text-sm font-medium">
-                                      {formattedDate}
-                                    </p>
-                                  );
-                                })()}
-                              </div>
-                            </TableCell>
-                          ) : (
-                            row.getVisibleCells().map((cell, indexCell) => {
-                              if (grouped) {
-                                return (
-                                  <TableCell
-                                    key={`cell.${cell.id}.${
-                                      cell.row.original.uuid ??
-                                      cell.row.original.id ??
-                                      indexCell
-                                    }`}
-                                    className={`py-4 ${
-                                      cell.row.original.type === "group"
-                                        ? "bg-muted"
-                                        : ""
-                                    }`}
-                                    colSpan={
-                                      cell.row.original.type === "group"
-                                        ? columns.length
-                                        : 1
-                                    }
-                                    style={
-                                      (cell.column.columnDef.meta as any)?.style
-                                    }
-                                  >
-                                    {cell.row.original.type === "group" ? (
-                                      <div className="flex flex-col gap-2">
-                                        {/* Patch: Client-only date formatting to prevent hydration mismatch */}
-                                        {(() => {
-                                          const [
-                                            formattedDate,
-                                            setFormattedDate,
-                                          ] = useState("");
-                                          useEffect(() => {
-                                            setFormattedDate(
-                                              format(
-                                                new Date(
-                                                  cell.row.original.date
-                                                ),
-                                                "EEEE, dd MMMM yyyy"
-                                              )
-                                            );
-                                          }, [cell.row.original.date]);
-                                          return (
-                                            <p className="text-sm font-medium">
-                                              {formattedDate}
-                                            </p>
-                                          );
-                                        })()}
-                                      </div>
-                                    ) : (
-                                      flexRender(
-                                        cell.column.columnDef.cell,
-                                        cell.getContext()
-                                      )
-                                    )}
-                                  </TableCell>
-                                );
-                              } else {
-                                return (
-                                  <TableCell
-                                    key={`cell.${cell.id}.${
-                                      cell.row.original.uuid ??
-                                      cell.row.original.id ??
-                                      indexCell
-                                    }`}
-                                    className="py-4"
-                                    style={
-                                      (cell.column.columnDef.meta as any)?.style
-                                    }
-                                  >
-                                    {flexRender(
-                                      cell.column.columnDef.cell,
-                                      cell.getContext()
-                                    )}
-                                  </TableCell>
-                                );
-                              }
-                            })
-                          )}
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow key="no-data">
-                        <TableCell
-                          colSpan={columns.length}
-                          className="h-24 text-center"
-                        >
-                          <p className="text-muted-foreground text-sm">
-                            Data not found
-                          </p>
+                            />
+                          </div>
                         </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-                <ScrollBar orientation="horizontal" />
-              </ScrollArea>
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <div className="flex flex-1 flex-shrink-0 items-center gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground text-sm">
-                    Rows per page
-                  </span>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex h-8 items-center gap-1"
-                      >
-                        {per} <ChevronDown className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start">
-                      {perOptions.map((option) => (
-                        <DropdownMenuCheckboxItem
-                          key={option.value}
-                          checked={per === option.value}
-                          onCheckedChange={() => setPer(option.value)}
-                        >
-                          {option.label}
-                        </DropdownMenuCheckboxItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                <div className="text-muted-foreground text-sm">
-                  Page {data?.current_page || 1} of {data?.last_page || 1}
-                </div>
-              </div>
-              <Pagination className="mx-0 w-auto">
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      className={cn(
-                        "cursor-pointer",
-                        data?.current_page === 1 &&
-                          "pointer-events-none opacity-50"
+                      ) : (
+                        row.getVisibleCells().map((cell, indexCell) => {
+                          if (grouped) {
+                            return (
+                              <TableCell
+                                key={`cell.${cell.id}.${
+                                  (cell.row.original as { uuid?: string })
+                                    .uuid ??
+                                  (cell.row.original as { id?: string }).id ??
+                                  indexCell
+                                }`}
+                                className={`py-4 ${
+                                  (cell.row.original as { type?: string })
+                                    .type === "group"
+                                    ? "bg-muted"
+                                    : ""
+                                }`}
+                                colSpan={
+                                  (cell.row.original as { type?: string })
+                                    .type === "group"
+                                    ? columns.length
+                                    : 1
+                                }
+                                style={
+                                  (
+                                    cell.column.columnDef.meta as {
+                                      style?: React.CSSProperties;
+                                    }
+                                  )?.style
+                                }
+                              >
+                                {(cell.row.original as { type?: string })
+                                  .type === "group" ? (
+                                  <div className="flex flex-col gap-2">
+                                    <ClientDateFormatter
+                                      date={
+                                        (
+                                          cell.row.original as {
+                                            date: string | Date;
+                                          }
+                                        ).date
+                                      }
+                                    />
+                                  </div>
+                                ) : (
+                                  flexRender(
+                                    cell.column.columnDef.cell,
+                                    cell.getContext()
+                                  )
+                                )}
+                              </TableCell>
+                            );
+                          } else {
+                            return (
+                              <TableCell
+                                key={`cell.${cell.id}.${
+                                  (cell.row.original as { uuid?: string })
+                                    .uuid ??
+                                  (cell.row.original as { id?: string }).id ??
+                                  indexCell
+                                }`}
+                                className="py-4"
+                                style={
+                                  (
+                                    cell.column.columnDef.meta as {
+                                      style?: React.CSSProperties;
+                                    }
+                                  )?.style
+                                }
+                              >
+                                {flexRender(
+                                  cell.column.columnDef.cell,
+                                  cell.getContext()
+                                )}
+                              </TableCell>
+                            );
+                          }
+                        })
                       )}
-                      onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                    />
-                  </PaginationItem>
-
-                  {pagination.map((item: number) => (
-                    <PaginationItem key={item}>
-                      <PaginationLink
-                        isActive={item === page}
-                        className="cursor-pointer"
-                        onClick={() => setPage(item)}
-                      >
-                        {item}
-                      </PaginationLink>
-                    </PaginationItem>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow key="no-data">
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-24 text-center"
+                    >
+                      <p className="text-muted-foreground text-sm">
+                        Data not found
+                      </p>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        </div>
+        <div className="mt-4 flex items-center justify-end gap-2">
+          <div className="flex flex-1 shrink-0 items-center gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground text-sm">
+                Rows per page
+              </span>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex h-8 items-center gap-1"
+                  >
+                    {limit} <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  {limitOptions.map((option) => (
+                    <DropdownMenuCheckboxItem
+                      key={option.value}
+                      checked={limit === option.value}
+                      onCheckedChange={() => setLimit(option.value)}
+                    >
+                      {option.label}
+                    </DropdownMenuCheckboxItem>
                   ))}
-
-                  <PaginationItem>
-                    <PaginationNext
-                      className={cn(
-                        "cursor-pointer",
-                        data?.current_page === data?.last_page &&
-                          "pointer-events-none opacity-50"
-                      )}
-                      onClick={() => setPage((prev) => prev + 1)}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-          </CardContent>
-        </Card>
-      );
-    }
-  )
-);
+            <div className="text-muted-foreground text-sm">
+              Page {data?.pagination?.page || data?.current_page || page} of{" "}
+              {data?.pagination?.totalPages || data?.last_page || 1}
+            </div>
+          </div>
+          <Pagination className="mx-0 w-auto">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  className={cn(
+                    "cursor-pointer",
+                    (data?.pagination?.page || data?.current_page || page) ===
+                      1 && "pointer-events-none opacity-50"
+                  )}
+                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                />
+              </PaginationItem>
 
-PaginateTable.displayName = "PaginateTable";
+              {pagination.map((item: number) => (
+                <PaginationItem key={item}>
+                  <PaginationLink
+                    isActive={
+                      item ===
+                      (data?.pagination?.page || data?.current_page || page)
+                    }
+                    className="cursor-pointer"
+                    onClick={() => setPage(item)}
+                  >
+                    {item}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+
+              <PaginationItem>
+                <PaginationNext
+                  className={cn(
+                    "cursor-pointer",
+                    (data?.pagination?.page || data?.current_page || page) ===
+                      (data?.pagination?.totalPages || data?.last_page || 1) &&
+                      "pointer-events-none opacity-50"
+                  )}
+                  onClick={() => setPage((prev) => prev + 1)}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+const PaginateTableWithRef = forwardRef(PaginateTableComponent);
+
+(PaginateTableWithRef as { displayName?: string }).displayName =
+  "PaginateTable";
+
+const PaginateTable = memo(PaginateTableWithRef) as <TData = unknown>(
+  props: PaginateTableProps<TData> & {
+    ref?: React.ForwardedRef<PaginateTableRef>;
+  }
+) => React.ReactElement;
+
+(PaginateTable as { displayName?: string }).displayName = "PaginateTable";
 
 export { PaginateTable };

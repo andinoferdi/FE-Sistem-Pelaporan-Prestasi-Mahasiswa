@@ -1,67 +1,72 @@
 import * as React from "react";
+
 import { cn } from "@/lib/utils";
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-  error?: string;
-  helperText?: string;
+type InputType = React.HTMLInputTypeAttribute | "currency";
+
+export interface InputProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
+  currencyFormat?: Intl.NumberFormat;
+  type?: InputType;
 }
 
-export function Input({
-  label,
-  error,
-  helperText,
-  className = "",
-  id,
-  ...props
-}: InputProps) {
-  const generatedId = React.useId();
-  const inputId = id || generatedId;
+const defaultCurrencyFormat = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
 
-  return (
-    <div className="w-full">
-      {label && (
-        <label
-          htmlFor={inputId}
-          className="block text-sm font-medium text-foreground mb-2"
-        >
-          {label}
-        </label>
-      )}
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  (
+    { className, type = "text", currencyFormat, onChange, onFocus, ...props },
+    ref
+  ) => {
+    const isCurrency = type === "currency";
+    const inputType = isCurrency ? "text" : type;
+
+    const formatCurrency = (value: number) => {
+      return (currencyFormat ?? defaultCurrencyFormat).format(value);
+    };
+
+    const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+      if (isCurrency) {
+        const target = e.currentTarget;
+        target.setSelectionRange(target.value.length, target.value.length);
+      }
+      onFocus?.(e);
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (isCurrency) {
+        const target = e.currentTarget;
+        const numericValue = Number(target.value.replace(/\D/g, "")) / 100;
+        target.value = formatCurrency(numericValue);
+      }
+      onChange?.(e);
+    };
+
+    return (
       <input
-        id={inputId}
+        type={inputType}
         className={cn(
-          "w-full px-4 py-3",
-          "bg-card text-foreground",
-          "border-2 rounded-xl",
-          "placeholder:text-muted-foreground",
-          "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary",
-          "disabled:bg-muted disabled:cursor-not-allowed disabled:opacity-60",
-          "transition-all duration-200",
-          error
-            ? "border-destructive focus:ring-destructive/20"
-            : "border-border",
+          "border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm",
+          "ring-offset-background file:border-0 file:bg-transparent file:text-sm",
+          "file:text-foreground placeholder:text-muted-foreground file:font-medium",
+          "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
+          "focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          isCurrency && "text-end",
           className
         )}
+        maxLength={isCurrency ? 22 : undefined}
+        onFocus={handleFocus}
+        onChange={handleChange}
+        ref={ref}
         {...props}
       />
-      {error && (
-        <p className="mt-2 text-sm text-destructive flex items-center gap-1.5">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-              clipRule="evenodd"
-            />
-          </svg>
-          {error}
-        </p>
-      )}
-      {helperText && !error && (
-        <p className="mt-2 text-sm text-muted-foreground">
-          {helperText}
-        </p>
-      )}
-    </div>
-  );
-}
+    );
+  }
+);
+Input.displayName = "Input";
+
+export { Input };

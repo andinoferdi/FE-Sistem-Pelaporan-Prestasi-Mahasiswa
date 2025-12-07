@@ -143,14 +143,6 @@ export function Footer() {
                       Prestasi Saya
                     </UIFooterLink>
                   </li>
-                  <li>
-                    <UIFooterLink
-                      href="/dashboard/achievements/create"
-                      ariaLabel="Tambah prestasi baru"
-                    >
-                      Tambah Prestasi
-                    </UIFooterLink>
-                  </li>
                 </ul>
               </UIFooterSection>
             </div>

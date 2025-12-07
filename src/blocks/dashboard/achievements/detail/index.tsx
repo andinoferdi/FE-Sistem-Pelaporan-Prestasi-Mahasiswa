@@ -62,11 +62,11 @@ export default function DetailAchievementPage() {
       case "draft":
         return "outline";
       case "submitted":
-        return "info";
+        return "secondary";
       case "verified":
-        return "success";
+        return "default";
       case "rejected":
-        return "danger";
+        return "destructive";
       case "deleted":
         return "outline";
       default:
@@ -155,34 +155,31 @@ export default function DetailAchievementPage() {
 
   if (!achievement) {
     return (
-      <div className="min-h-screen bg-background py-8 lg:py-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Card variant="glass" className="border-border/50">
-            <CardContent padding="default" className="text-center py-12">
-              <p className="text-muted-foreground">
-                Prestasi tidak ditemukan atau Anda tidak memiliki akses.
-              </p>
-              <Button
-                variant="outline"
-                className="mt-4 cursor-pointer disabled:cursor-not-allowed"
-                onClick={() => router.push("/dashboard/achievements")}
-              >
-                Kembali ke Daftar Prestasi
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="w-full">
+          <Card className="border-border/50">
+            <CardContent className="text-center py-12">
+            <p className="text-muted-foreground">
+              Prestasi tidak ditemukan atau Anda tidak memiliki akses.
+            </p>
+            <Button
+              variant="outline"
+              className="mt-4 cursor-pointer disabled:cursor-not-allowed"
+              onClick={() => router.push("/dashboard/achievements")}
+            >
+              Kembali ke Daftar Prestasi
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background py-8 lg:py-12">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="w-full">
         <div className="mb-6">
           <Button
             variant="outline"
-            onClick={() => router.push("/achievements")}
+            onClick={() => router.push("/dashboard/achievements")}
             className="mb-4 cursor-pointer disabled:cursor-not-allowed"
           >
             <svg
@@ -205,13 +202,13 @@ export default function DetailAchievementPage() {
         </div>
 
         {error && (
-          <Alert variant="error" onClose={() => setError("")} className="mb-6">
+          <Alert variant="destructive" className="mb-6">
             {error}
           </Alert>
         )}
 
-        <Card variant="glass" className="border-border/50">
-          <CardHeader padding="default">
+        <Card className="border-border/50">
+          <CardHeader>
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
@@ -231,7 +228,7 @@ export default function DetailAchievementPage() {
               </div>
             </div>
           </CardHeader>
-          <CardContent padding="default">
+          <CardContent>
             <div className="space-y-6">
               <div>
                 <h2 className="text-lg font-semibold text-foreground mb-2">
@@ -433,36 +430,9 @@ export default function DetailAchievementPage() {
                 </div>
               )}
 
-              {achievement.status === "draft" && user?.role === "Mahasiswa" && (
-                <div className="flex gap-2 pt-4">
-                  <Button
-                    variant="primary"
-                    onClick={() => router.push(`/dashboard/achievements/${achievement.id}/edit`)}
-                    className="cursor-pointer disabled:cursor-not-allowed"
-                  >
-                    <svg
-                      className="w-4 h-4 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                      focusable="false"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      />
-                    </svg>
-                    Edit Prestasi
-                  </Button>
-                </div>
-              )}
             </div>
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 }
