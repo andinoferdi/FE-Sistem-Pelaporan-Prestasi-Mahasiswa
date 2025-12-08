@@ -97,7 +97,7 @@ const getStatusBadge = (status: AchievementStatus) => {
   > = {
     draft: { label: "Draft", variant: "secondary" },
     submitted: { label: "Terkirim", variant: "default" },
-    verified: { label: "Terverifikasi", variant: "default", className: "bg-(--success) text-success-foreground border-(--success) hover:bg-(--success-dark)" },
+    verified: { label: "Terverifikasi", variant: "default", className: "bg-green-600 text-white border-green-600 hover:bg-green-700" },
     rejected: { label: "Ditolak", variant: "destructive" },
     deleted: { label: "Dihapus", variant: "destructive" },
   };
@@ -731,7 +731,7 @@ export default function AchievementPage() {
           <Button
             onClick={handleOpenCreate}
             disabled={isCreating}
-                className="text-primary-foreground"
+                className="text-white"
           >
             <Plus className="mr-2 h-4 w-4" />
             Tambah Prestasi

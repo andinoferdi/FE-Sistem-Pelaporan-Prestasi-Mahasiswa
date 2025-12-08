@@ -17,6 +17,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useTitleContext } from '../providers/title-provider';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Header, HeaderActions, HeaderContent, HeaderTitle } from '../ui/header';
+import NotificationDropdown from '@/components/notification-dropdown';
 import { ChevronDown, LogOut, User } from 'lucide-react';
 
 export function DashboardHeader() {
@@ -41,6 +42,7 @@ export function DashboardHeader() {
       </HeaderContent>
 
       <HeaderActions>
+        <NotificationDropdown />
         <DropdownMenu>
           <DropdownMenuTrigger className='flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-accent'>
             <Avatar className='h-10 w-10'>

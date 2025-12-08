@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState, useCallback } from 'react';
 
 import Link from 'next/link';
 
@@ -8,63 +8,39 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
-import { Bell, Clock, MessageCircle, ShoppingCart, Users, X } from 'lucide-react';
+import { Bell, Clock, X, AlertCircle } from 'lucide-react';
 
-const getKindLabel = (jenisNotif: string) => {
-  if (jenisNotif === 'chat') return 'CHAT';
-  if (jenisNotif === 'konsumen') return 'KONSUMEN';
-  if (jenisNotif === 'claim') return 'CLAIM';
+import type { Notification } from '@/types/notification';
+import { useNotifications, useNotificationCount, useMarkAsRead, useMarkAllAsRead } from '@/services/notification';
+import { toast } from 'react-toastify';
+
+const getKindLabel = (type: string) => {
+  if (type === 'achievement_rejected') return 'PRESTASI';
   return 'LAINNYA';
 };
 
-interface NotificationData {
-  id?: string;
-  jenis_notifikasi?: string;
-  is_read?: boolean | number | string;
-  created_at?: string;
-  chatting?: {
-    pengirim?: { name?: string };
-    pesan?: string;
-  };
-  konsumen?: {
-    created_by?: { name?: string };
-    name?: string;
-    phone?: string;
-  };
-  phone?: string;
-  user?: { name?: string };
-  target?: { hadiah?: string };
-  pengirim?: { name?: string };
-  type?: string;
-}
-
-const getMessage = (n: NotificationData) => {
-  if (n.jenis_notifikasi === 'chat') {
-    return `${n.chatting?.pengirim?.name ?? 'Pengirim'} mengirim pesan ${n.chatting?.pesan ? `: ${n.chatting.pesan}` : ''}`;
-  }
-  if (n.jenis_notifikasi === 'konsumen') {
-    return `Mitra berusaha menginputkan data Konsumen yang sudah ada milik Sales ${n.konsumen?.created_by?.name ?? '-'} . Konsumen dengan nama ${n.konsumen?.name ?? '-'} dan no. telp ${n.konsumen?.phone ?? n.phone ?? '-'}`;
-  }
-  if (n.jenis_notifikasi === 'claim') {
-    return `${n.user?.name} ingin Claim bonus ${n.target?.hadiah}`;
-  }
-
-  return '-';
+const getTitle = (n: Notification) => {
+  return n.title;
 };
 
-const getTitle = (n: NotificationData) => {
-  if (n.jenis_notifikasi === 'chat') return 'Pesan baru';
-  if (n.jenis_notifikasi === 'konsumen') return 'Notifikasi Konsumen';
-  if (n.jenis_notifikasi === 'claim') return 'Claim Bonus';
-  return '-';
+const getMessage = (n: Notification) => {
+  return n.message;
 };
 
 const NotificationDropdown = memo(function NotificationDropdown() {
   const [open, setOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(() => Date.now());
-  const notifCount = 0;
-  const notifications: NotificationData[] = [];
-  const hasUnread = false;
+  const [page] = useState(1);
+  const limit = 10;
+
+  const { data: notificationsData, isLoading } = useNotifications(page, limit);
+  const { data: unreadCountData } = useNotificationCount();
+  const markAsReadMutation = useMarkAsRead();
+  const markAllAsReadMutation = useMarkAllAsRead();
+
+  const notifications = notificationsData?.data ?? [];
+  const notifCount = unreadCountData?.data?.count ?? 0;
+  const hasUnread = notifCount > 0;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -73,6 +49,29 @@ const NotificationDropdown = memo(function NotificationDropdown() {
     return () => clearInterval(interval);
   }, []);
 
+  const handleMarkAsRead = useCallback(async (id: string) => {
+    try {
+      await markAsReadMutation.mutateAsync(id);
+    } catch (error) {
+      const errorMessage = (error as { response?: { data?: { data?: { message?: string }; message?: string } } })?.response?.data?.data?.message ||
+        (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        'Gagal menandai notifikasi sebagai sudah dibaca.';
+      toast.error(errorMessage);
+    }
+  }, [markAsReadMutation]);
+
+  const handleMarkAllAsRead = useCallback(async () => {
+    try {
+      await markAllAsReadMutation.mutateAsync();
+      toast.success('Semua notifikasi berhasil ditandai sebagai sudah dibaca.');
+    } catch (error) {
+      const errorMessage = (error as { response?: { data?: { data?: { message?: string }; message?: string } } })?.response?.data?.data?.message ||
+        (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        'Gagal menandai semua notifikasi sebagai sudah dibaca.';
+      toast.error(errorMessage);
+    }
+  }, [markAllAsReadMutation]);
+
   const formatRelative = (iso: string) => {
     const date = new Date(iso);
     const diffMs = currentTime - date.getTime();
@@ -80,34 +79,24 @@ const NotificationDropdown = memo(function NotificationDropdown() {
     const min = Math.floor(sec / 60);
     const hour = Math.floor(min / 60);
     const day = Math.floor(hour / 24);
-    if (day > 0) return `${day} day${day > 1 ? 's' : ''} ago`;
-    if (hour > 0) return `${hour} hour${hour > 1 ? 's' : ''} ago`;
-    if (min > 0) return `${min} minute${min > 1 ? 's' : ''} ago`;
-    return 'just now';
+    if (day > 0) return `${day} hari yang lalu`;
+    if (hour > 0) return `${hour} jam yang lalu`;
+    if (min > 0) return `${min} menit yang lalu`;
+    return 'baru saja';
   };
 
-  const renderIcon = (n: NotificationData, index: number) => {
-    const kind = (n?.jenis_notifikasi ?? n?.type) as string | undefined;
+  const renderIcon = (n: Notification) => {
     const base = 'w-12 h-12 rounded-xl flex items-center justify-center';
-    if (kind === 'chat') {
+    if (n.type === 'achievement_rejected') {
       return (
-        <div className={`${base} bg-emerald-700`}>
-          <MessageCircle className='h-5 w-5 text-primary-foreground' />
+        <div className={`${base} bg-destructive/20`}>
+          <AlertCircle className='h-5 w-5 text-destructive' />
         </div>
       );
     }
-    if (kind === 'konsumen') {
-      return (
-        <div className={`${base} bg-warning`}>
-          <Users className='h-5 w-5 text-warning-foreground' />
-        </div>
-      );
-    }
-    const bgColors = ['bg-success', 'bg-muted-foreground', 'bg-gray-600'];
-    const bgColor = bgColors[index % bgColors.length];
     return (
-      <div className={`${base} ${bgColor}`}>
-        <ShoppingCart className='h-5 w-5 text-primary-foreground' />
+      <div className={`${base} bg-muted`}>
+        <Bell className='h-5 w-5 text-muted-foreground' />
       </div>
     );
   };
@@ -117,11 +106,12 @@ const NotificationDropdown = memo(function NotificationDropdown() {
       <Button
         variant='ghost'
         className='h-auto p-0 font-normal text-warning hover:bg-warning-light hover:text-warning-text'
-        disabled={!hasUnread}>
-        Mark All as Read
+        disabled={!hasUnread || markAllAsReadMutation.isPending}
+        onClick={handleMarkAllAsRead}>
+        Tandai Semua Dibaca
       </Button>
     ),
-    [hasUnread]
+    [hasUnread, markAllAsReadMutation.isPending, handleMarkAllAsRead]
   );
 
   return (
@@ -138,60 +128,97 @@ const NotificationDropdown = memo(function NotificationDropdown() {
       </DropdownMenuTrigger>
       <DropdownMenuContent className='w-96 p-0' align='end' sideOffset={8}>
         <div className='flex items-center justify-between border-b p-4'>
-          <h3 className='text-lg font-semibold'>Notification</h3>
-          <Button variant='ghost' size='icon' className='h-8 w-8' aria-label='Close' onClick={() => setOpen(false)}>
+          <h3 className='text-lg font-semibold'>Notifikasi</h3>
+          <Button variant='ghost' size='icon' className='h-8 w-8' aria-label='Tutup' onClick={() => setOpen(false)}>
             <X className='h-4 w-4' />
           </Button>
         </div>
 
         <div className='max-h-96 overflow-y-auto'>
-          {notifications?.length ? (
-            notifications.map((n: NotificationData, index: number) => {
-              const kind = getKindLabel(n.jenis_notifikasi ?? '') as string | undefined;
-              const isUnread = !n?.is_read || n.is_read === 0 || n.is_read === '0';
+          {isLoading ? (
+            <div className='p-6 text-center text-sm text-muted-foreground'>Memuat...</div>
+          ) : notifications?.length ? (
+            notifications.map((n: Notification) => {
+              const kind = getKindLabel(n.type);
+              const isUnread = !n.is_read;
               const text = getMessage(n);
-
-              return (
-                <div key={n.id} className='border-b p-4 last:border-b-0 hover:bg-muted'>
+              const notificationContent = n.mongo_achievement_id ? (
+                <Link
+                  href={`/achievements/${n.mongo_achievement_id}`}
+                  onClick={() => {
+                    if (isUnread) {
+                      handleMarkAsRead(n.id);
+                    }
+                    setOpen(false);
+                  }}
+                  className='block'>
                   <div className='flex items-start gap-3'>
-                    {renderIcon(n, index)}
+                    {renderIcon(n)}
                     <div className='min-w-0 flex-1'>
                       <p className='mb-2 text-sm text-foreground'>
                         <span className='font-medium'>{getTitle(n)}</span> {text}
                       </p>
                       <div className='flex items-center gap-2 text-xs text-muted-foreground'>
                         <Badge variant='secondary' className='bg-info-light text-info-text hover:bg-info-light'>
-                          {(kind || '').toString().toUpperCase() || 'TRANSAKSI'}
+                          {kind}
                         </Badge>
                         <div className='flex items-center gap-1'>
                           <Clock className='h-3 w-3' />
-                          <span>{formatRelative(n?.created_at ?? new Date().toISOString())}</span>
+                          <span>{formatRelative(n.created_at)}</span>
                         </div>
                       </div>
                     </div>
                     {isUnread && (
                       <div className='shrink-0'>
                         <div className='h-2 w-2 rounded-full bg-destructive'></div>
-                        <span className='ml-1 text-lg font-bold text-destructive'>!</span>
                       </div>
                     )}
                   </div>
+                </Link>
+              ) : (
+                <div
+                  className='flex items-start gap-3 cursor-pointer'
+                  onClick={() => {
+                    if (isUnread) {
+                      handleMarkAsRead(n.id);
+                    }
+                  }}>
+                  {renderIcon(n)}
+                  <div className='min-w-0 flex-1'>
+                    <p className='mb-2 text-sm text-foreground'>
+                      <span className='font-medium'>{getTitle(n)}</span> {text}
+                    </p>
+                    <div className='flex items-center gap-2 text-xs text-muted-foreground'>
+                      <Badge variant='secondary' className='bg-info-light text-info-text hover:bg-info-light'>
+                        {kind}
+                      </Badge>
+                      <div className='flex items-center gap-1'>
+                        <Clock className='h-3 w-3' />
+                        <span>{formatRelative(n.created_at)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  {isUnread && (
+                    <div className='shrink-0'>
+                      <div className='h-2 w-2 rounded-full bg-destructive'></div>
+                    </div>
+                  )}
+                </div>
+              );
+
+              return (
+                <div key={n.id} className='border-b p-4 last:border-b-0 hover:bg-muted'>
+                  {notificationContent}
                 </div>
               );
             })
           ) : (
-            <div className='p-6 text-center text-sm text-muted-foreground'>Tidak ada notifikasi belum dibaca</div>
+            <div className='p-6 text-center text-sm text-muted-foreground'>Tidak ada notifikasi</div>
           )}
         </div>
 
         <div className='flex items-center justify-between border-t bg-muted p-4'>
           {hasUnread && headerRight}
-          <Link
-            href='/notifikasi'
-            onClick={() => setOpen(false)}
-            className='rounded-md bg-success px-4 py-2 text-success-foreground hover:bg-success-dark'>
-            View all notifications
-          </Link>
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
