@@ -4,15 +4,32 @@ import React, { useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { ArrowLeft, ExternalLink, Loader2, RefreshCw } from "lucide-react";
+import { ArrowLeft, ExternalLink, Loader2, RefreshCw, CheckCircle, XCircle } from "lucide-react";
+import { useState } from "react";
 
 import { PageTitle } from "@/components/page-title";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-import { getAchievementById } from "@/services/achievement";
+import { getAchievementById, verifyAchievement, rejectAchievement } from "@/services/achievement";
 import type { AchievementStatus } from "@/types/achievement";
+import { useAuth } from "@/contexts/auth-context";
+import { useCurrentUser } from "@/services/auth";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type DetailRow = {
   label: string;
@@ -22,18 +39,18 @@ type DetailRow = {
 const getStatusBadge = (status?: AchievementStatus) => {
   const statusConfig: Record<
     string,
-    { label: string; variant: "secondary" | "default" | "destructive" }
+    { label: string; variant: "secondary" | "default" | "destructive"; className?: string }
   > = {
     draft: { label: "Draft", variant: "secondary" },
     submitted: { label: "Terkirim", variant: "default" },
-    verified: { label: "Terverifikasi", variant: "default" },
+    verified: { label: "Terverifikasi", variant: "default", className: "bg-green-600 text-white border-green-600 hover:bg-green-700" },
     rejected: { label: "Ditolak", variant: "destructive" },
     deleted: { label: "Dihapus", variant: "destructive" },
   };
 
   const key = status ?? "draft";
   const config = statusConfig[key] ?? statusConfig.draft;
-  return <Badge variant={config.variant}>{config.label}</Badge>;
+  return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
 };
 
 const getTypeLabel = (type?: string) => {
@@ -96,9 +113,37 @@ const buildAbsoluteUrl = (url: string) => {
   return `${baseUrl}${url.startsWith("/") ? url : `/${url}`}`;
 };
 
+const getErrorMessage = (err: unknown) => {
+  const error = err as { message?: string; response?: { data?: { data?: { message?: string }; message?: string } }; data?: { message?: string } };
+  return (
+    error?.response?.data?.data?.message ||
+    error?.response?.data?.message ||
+    error?.data?.message ||
+    error?.message ||
+    "Terjadi kesalahan"
+  );
+};
+
 export default function AchievementDetail() {
   const router = useRouter();
   const params = useParams<{ id?: string | string[] }>();
+  const queryClient = useQueryClient();
+  const { user: contextUser } = useAuth();
+  const { data: currentUser } = useCurrentUser();
+  const userData = currentUser || contextUser;
+
+  interface UserData {
+    role?: string;
+    roleName?: string;
+  }
+
+  const userRole = String(
+    (userData as UserData)?.role || (userData as UserData)?.roleName || ""
+  ).toLowerCase();
+  const isDosenWali = userRole === "dosen wali" || userRole === "dosenwali";
+
+  const [openReject, setOpenReject] = useState(false);
+  const [rejectionNote, setRejectionNote] = useState("");
 
   const achievementId = useMemo(() => {
     const raw = params?.id;
@@ -208,6 +253,52 @@ export default function AchievementDetail() {
     await refetch();
   };
 
+  const verifyMutation = useMutation({
+    mutationFn: (id: string) => verifyAchievement(id),
+    onSuccess: async () => {
+      queryClient.invalidateQueries({ queryKey: ["achievements"] });
+      toast.success("Prestasi berhasil diverifikasi");
+      await refetch();
+    },
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: ({ id, note }: { id: string; note: string }) => rejectAchievement(id, note),
+    onSuccess: async () => {
+      queryClient.invalidateQueries({ queryKey: ["achievements"] });
+      toast.success("Prestasi berhasil ditolak");
+      setOpenReject(false);
+      setRejectionNote("");
+      await refetch();
+    },
+  });
+
+  const handleVerify = async () => {
+    if (!achievementId) return;
+    try {
+      await verifyMutation.mutateAsync(achievementId);
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    }
+  };
+
+  const handleReject = async () => {
+    if (!achievementId) return;
+    if (!rejectionNote.trim()) {
+      toast.error("Catatan penolakan wajib diisi");
+      return;
+    }
+    try {
+      await rejectMutation.mutateAsync({ id: achievementId, note: rejectionNote.trim() });
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    }
+  };
+
+  const achievementStatus = achievement?.status as AchievementStatus | undefined;
+  const canVerify = isDosenWali && achievementStatus === "submitted";
+  const canReject = isDosenWali && achievementStatus === "submitted";
+
   if (!achievementId) {
     return (
       <section className="p-4">
@@ -287,6 +378,26 @@ export default function AchievementDetail() {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <PageTitle title="Detail Prestasi" />
         <div className="flex items-center gap-2">
+          {canVerify && (
+            <Button
+              onClick={handleVerify}
+              disabled={verifyMutation.isPending}
+              className="bg-green-600 text-white hover:bg-green-700"
+            >
+              <CheckCircle className="mr-2 h-4 w-4" />
+              {verifyMutation.isPending ? "Memverifikasi..." : "Verifikasi"}
+            </Button>
+          )}
+          {canReject && (
+            <Button
+              onClick={() => setOpenReject(true)}
+              disabled={rejectMutation.isPending}
+              variant="destructive"
+            >
+              <XCircle className="mr-2 h-4 w-4" />
+              Tolak
+            </Button>
+          )}
           <Button variant="outline" onClick={handleBack} aria-label="Kembali" className="cursor-pointer">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Kembali
@@ -322,6 +433,39 @@ export default function AchievementDetail() {
           </div>
 
           <div className="mt-4 h-px w-full bg-border" />
+
+          {achievementStatus === "rejected" && achievement.rejection_note && (
+            <div className="mt-4 rounded-md border border-destructive/30 bg-destructive/10 p-4">
+              <p className="text-sm font-medium text-destructive">Catatan Penolakan</p>
+              <p className="mt-1 text-sm whitespace-pre-line">
+                {achievement.rejection_note}
+              </p>
+            </div>
+          )}
+
+          {achievementStatus === "verified" && (achievement.verified_at || achievement.verified_by) && (
+            <div className="mt-4 rounded-md border border-green-200 bg-green-50 p-4">
+              <p className="text-sm font-medium text-green-800">Informasi Verifikasi</p>
+              <div className="mt-2 grid grid-cols-1 gap-2 lg:grid-cols-2">
+                {achievement.verified_at && (
+                  <div>
+                    <p className="text-xs text-green-700">Diverifikasi Pada</p>
+                    <p className="text-sm text-green-900">
+                      {formatDateSafe(achievement.verified_at)}
+                    </p>
+                  </div>
+                )}
+                {achievement.verified_by && (
+                  <div>
+                    <p className="text-xs text-green-700">Diverifikasi Oleh</p>
+                    <p className="text-sm text-green-900">
+                      {achievement.verified_by}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
             <div>
@@ -452,6 +596,40 @@ export default function AchievementDetail() {
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog open={openReject} onOpenChange={setOpenReject}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tolak prestasi?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Berikan catatan penolakan untuk prestasi ini. Catatan ini akan dikirim ke mahasiswa.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="mt-4 space-y-2">
+            <Label htmlFor="rejection-note-detail">Catatan Penolakan</Label>
+            <Textarea
+              id="rejection-note-detail"
+              placeholder="Masukkan alasan penolakan..."
+              value={rejectionNote}
+              onChange={(e) => setRejectionNote(e.target.value)}
+              rows={4}
+              className="resize-none"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={rejectMutation.isPending}>
+              Batal
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleReject}
+              disabled={rejectMutation.isPending || !rejectionNote.trim()}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {rejectMutation.isPending ? "Menolak..." : "Tolak"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
   );
 }

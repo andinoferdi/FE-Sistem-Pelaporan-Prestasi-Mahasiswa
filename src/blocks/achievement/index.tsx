@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useMemo, useState, useRef } from "react";
+import React, { memo, useMemo, useState, useRef, useEffect } from "react";
 
 import { AchievementForm, type AchievementFormValues } from "@/blocks/achievement/form";
 import { PageTitle } from "@/components/page-title";
@@ -41,6 +41,8 @@ import {
   deleteAchievement,
   submitAchievement,
   uploadAchievementAttachment,
+  verifyAchievement,
+  rejectAchievement,
 } from "@/services/achievement";
 import type {
   Achievement,
@@ -55,9 +57,12 @@ import type {
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Pencil, Plus, Trash, Send, Eye } from "lucide-react";
+import { MoreHorizontal, Pencil, Plus, Trash, Send, Eye, CheckCircle, XCircle } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { toast } from "react-toastify";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 interface ErrorWithMessage {
   message?: string;
@@ -88,17 +93,17 @@ const getErrorMessage = (err: unknown) => {
 const getStatusBadge = (status: AchievementStatus) => {
   const statusConfig: Record<
     string,
-    { label: string; variant: "secondary" | "default" | "destructive" }
+    { label: string; variant: "secondary" | "default" | "destructive"; className?: string }
   > = {
     draft: { label: "Draft", variant: "secondary" },
     submitted: { label: "Terkirim", variant: "default" },
-    verified: { label: "Terverifikasi", variant: "default" },
+    verified: { label: "Terverifikasi", variant: "default", className: "bg-green-600 text-white border-green-600 hover:bg-green-700" },
     rejected: { label: "Ditolak", variant: "destructive" },
     deleted: { label: "Dihapus", variant: "destructive" },
   };
 
   const config = statusConfig[status] ?? statusConfig.draft;
-  return <Badge variant={config.variant}>{config.label}</Badge>;
+  return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
 };
 
 const getTypeLabel = (type: string) => {
@@ -125,17 +130,21 @@ const convertDateToRFC3339 = (dateStr: string | null | undefined): string | unde
 interface ActionCellProps {
   row: AchievementListItem;
   isMahasiswa: boolean;
+  isDosenWali?: boolean;
 }
 
 const ActionCell = memo(function ActionCell({
   row,
   isMahasiswa,
+  isDosenWali = false,
 }: ActionCellProps) {
   const queryClient = useQueryClient();
 
   const [openForm, setOpenForm] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [openDelete, setOpenDelete] = useState(false);
+  const [openReject, setOpenReject] = useState(false);
+  const [rejectionNote, setRejectionNote] = useState("");
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 
   const achievementId = selectedId ?? row.id;
@@ -162,8 +171,7 @@ const ActionCell = memo(function ActionCell({
     mutationFn: ({ id, data }: { id: string; data: UpdateAchievementBody }) =>
       updateAchievement(id, data),
     onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ["achievements", "paginated"], exact: true });
-      queryClient.invalidateQueries({ queryKey: ["achievements", achievementId], exact: true });
+      queryClient.invalidateQueries({ queryKey: ["achievements"] });
       await refetchAchievementsTable();
     },
   });
@@ -171,7 +179,7 @@ const ActionCell = memo(function ActionCell({
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteAchievement(id),
     onSuccess: async (_data, id) => {
-      queryClient.invalidateQueries({ queryKey: ["achievements", "paginated"], exact: true });
+      queryClient.invalidateQueries({ queryKey: ["achievements"] });
       queryClient.setQueryData(["achievements", id], (old) => {
         if (!old || typeof old !== "object") return old;
         return { ...(old as Record<string, unknown>), status: "deleted" };
@@ -183,8 +191,7 @@ const ActionCell = memo(function ActionCell({
   const submitMutation = useMutation({
     mutationFn: (id: string) => submitAchievement(id),
     onSuccess: async (_data, id) => {
-      queryClient.invalidateQueries({ queryKey: ["achievements", id], exact: true });
-      queryClient.invalidateQueries({ queryKey: achievementsPaginatedKey, exact: true });
+      queryClient.invalidateQueries({ queryKey: ["achievements"] });
       queryClient.setQueryData(["achievements", id], (old) => {
         if (!old || typeof old !== "object") return old;
         return { ...(old as Record<string, unknown>), status: "submitted" };
@@ -203,10 +210,40 @@ const ActionCell = memo(function ActionCell({
     }) => uploadAchievementAttachment(achievementId, file),
   });
 
+  const verifyMutation = useMutation({
+    mutationFn: (id: string) => verifyAchievement(id),
+    onSuccess: async (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: ["achievements"] });
+      queryClient.setQueryData(["achievements", id], (old) => {
+        if (!old || typeof old !== "object") return old;
+        return { ...(old as Record<string, unknown>), status: "verified" };
+      });
+      await refetchAchievementsTable();
+      toast.success("Prestasi berhasil diverifikasi");
+    },
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: ({ id, note }: { id: string; note: string }) => rejectAchievement(id, note),
+    onSuccess: async (_data, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ["achievements"] });
+      queryClient.setQueryData(["achievements", id], (old) => {
+        if (!old || typeof old !== "object") return old;
+        return { ...(old as Record<string, unknown>), status: "rejected" };
+      });
+      await refetchAchievementsTable();
+      toast.success("Prestasi berhasil ditolak");
+      setOpenReject(false);
+      setRejectionNote("");
+    },
+  });
+
   const rowStatus = (row.status ?? "draft") as AchievementStatus;
   const canEdit = isMahasiswa && rowStatus === "draft";
   const canDelete = isMahasiswa && rowStatus === "draft";
   const canSubmit = isMahasiswa && rowStatus === "draft";
+  const canVerify = isDosenWali && rowStatus === "submitted";
+  const canReject = isDosenWali && rowStatus === "submitted";
 
   const handleEdit = () => {
     setSelectedId(row.id);
@@ -298,6 +335,26 @@ const ActionCell = memo(function ActionCell({
     }
   };
 
+  const handleVerify = async () => {
+    try {
+      await verifyMutation.mutateAsync(row.id);
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    }
+  };
+
+  const handleReject = async () => {
+    if (!rejectionNote.trim()) {
+      toast.error("Catatan penolakan wajib diisi");
+      return;
+    }
+    try {
+      await rejectMutation.mutateAsync({ id: row.id, note: rejectionNote.trim() });
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    }
+  };
+
   return (
     <>
       <DropdownMenu>
@@ -308,7 +365,9 @@ const ActionCell = memo(function ActionCell({
             disabled={
               updateMutation.isPending ||
               deleteMutation.isPending ||
-              submitMutation.isPending
+              submitMutation.isPending ||
+              verifyMutation.isPending ||
+              rejectMutation.isPending
             }
           >
             <MoreHorizontal className="h-4 w-4" />
@@ -355,6 +414,27 @@ const ActionCell = memo(function ActionCell({
             >
               <Trash className="mr-2 h-4 w-4" />
               Hapus
+            </DropdownMenuItem>
+          )}
+
+          {canVerify && (
+            <DropdownMenuItem
+              onClick={handleVerify}
+              disabled={verifyMutation.isPending}
+            >
+              <CheckCircle className="mr-2 h-4 w-4" />
+              Verifikasi
+            </DropdownMenuItem>
+          )}
+
+          {canReject && (
+            <DropdownMenuItem
+              onClick={() => setOpenReject(true)}
+              disabled={rejectMutation.isPending}
+              variant="destructive"
+            >
+              <XCircle className="mr-2 h-4 w-4" />
+              Tolak
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>
@@ -419,6 +499,40 @@ const ActionCell = memo(function ActionCell({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={openReject} onOpenChange={setOpenReject}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tolak prestasi?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Berikan catatan penolakan untuk prestasi ini. Catatan ini akan dikirim ke mahasiswa.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="mt-4 space-y-2">
+            <Label htmlFor="rejection-note">Catatan Penolakan</Label>
+            <Textarea
+              id="rejection-note"
+              placeholder="Masukkan alasan penolakan..."
+              value={rejectionNote}
+              onChange={(e) => setRejectionNote(e.target.value)}
+              rows={4}
+              className="resize-none"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={rejectMutation.isPending}>
+              Batal
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleReject}
+              disabled={rejectMutation.isPending || !rejectionNote.trim()}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {rejectMutation.isPending ? "Menolak..." : "Tolak"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 });
@@ -426,6 +540,7 @@ const ActionCell = memo(function ActionCell({
 export default function AchievementPage() {
   const queryClient = useQueryClient();
   const tableRef = useRef<PaginateTableRef>(null);
+  const pathname = usePathname();
 
   const { data: currentUser } = useCurrentUser();
   const { user: contextUser } = useAuth();
@@ -440,6 +555,7 @@ export default function AchievementPage() {
     (userData as UserData)?.role || (userData as UserData)?.roleName || ""
   ).toLowerCase();
   const isMahasiswa = userRole === "mahasiswa";
+  const isDosenWali = userRole === "dosen wali" || userRole === "dosenwali";
 
   const [openCreate, setOpenCreate] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
@@ -454,11 +570,21 @@ export default function AchievementPage() {
     });
   };
 
+  useEffect(() => {
+    if (pathname === "/achievements") {
+      void queryClient.refetchQueries({
+        queryKey: ["achievements", "paginated"],
+        exact: true,
+        type: "active",
+      });
+    }
+  }, [pathname, queryClient]);
+
   const createMutation = useMutation({
     mutationFn: (data: CreateAchievementBody) =>
       createAchievement(data),
     onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: achievementsPaginatedKey, exact: true });
+      queryClient.invalidateQueries({ queryKey: ["achievements"] });
       await refetchAchievementsTable();
     },
   });
@@ -518,10 +644,10 @@ export default function AchievementPage() {
         header: "Aksi",
         enableHiding: false,
         meta: { style: { width: "110px" }, align: "right" },
-        cell: ({ row }) => <ActionCell row={row.original} isMahasiswa={isMahasiswa} />,
+        cell: ({ row }) => <ActionCell row={row.original} isMahasiswa={isMahasiswa} isDosenWali={isDosenWali} />,
       },
     ],
-    [isMahasiswa]
+    [isMahasiswa, isDosenWali]
   );
 
   const handleOpenCreate = () => setOpenCreate(true);
@@ -571,7 +697,7 @@ export default function AchievementPage() {
 
           await updateAchievement(achievementId, { attachments: merged });
 
-          queryClient.invalidateQueries({ queryKey: achievementsPaginatedKey, exact: true });
+          queryClient.invalidateQueries({ queryKey: ["achievements"] });
           await refetchAchievementsTable();
 
           setPendingFiles([]);

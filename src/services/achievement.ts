@@ -266,3 +266,41 @@ export async function getAchievementStats(
     opts
   );
 }
+
+export async function verifyAchievement(
+  id: string,
+  opts: ApiOptions = {}
+): Promise<unknown> {
+  return apiFetch<unknown>(
+    `${ACHIEVEMENTS_BASE}/${id}/verify`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status: "verified" }),
+    },
+    opts
+  );
+}
+
+export async function rejectAchievement(
+  id: string,
+  rejectionNote: string,
+  opts: ApiOptions = {}
+): Promise<unknown> {
+  return apiFetch<unknown>(
+    `${ACHIEVEMENTS_BASE}/${id}/reject`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        status: "rejected",
+        rejection_note: rejectionNote,
+      }),
+    },
+    opts
+  );
+}

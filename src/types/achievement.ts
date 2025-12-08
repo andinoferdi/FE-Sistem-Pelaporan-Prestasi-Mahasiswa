@@ -79,6 +79,10 @@ export interface AchievementBase {
 
 export type Achievement = AchievementBase & {
   status?: AchievementStatus | string;
+  submitted_at?: string | null;
+  verified_at?: string | null;
+  verified_by?: string | null;
+  rejection_note?: string | null;
 };
 
 export type AchievementListItem = AchievementBase & {
@@ -133,4 +137,26 @@ export interface UpdateAchievementBody {
   tags?: string[];
   points?: number;
   attachments?: Attachment[];
+}
+
+export interface VerifyAchievementRequest {
+  status: "verified";
+}
+
+export interface RejectAchievementRequest {
+  status: "rejected";
+  rejection_note: string;
+}
+
+export interface AchievementReference {
+  id: string;
+  student_id: string;
+  mongo_achievement_id: string;
+  status: AchievementStatus;
+  submitted_at?: string | null;
+  verified_at?: string | null;
+  verified_by?: string | null;
+  rejection_note?: string | null;
+  created_at: string;
+  updated_at: string;
 }
