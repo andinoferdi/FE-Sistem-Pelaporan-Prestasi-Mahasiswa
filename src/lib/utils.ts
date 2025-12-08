@@ -1,23 +1,88 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const withTimeout = <T>(
-  promise: Promise<T>,
-  timeoutMs: number,
-  errorMessage?: string
-): Promise<T> => {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error(errorMessage || "Timeout")), timeoutMs)
-    ),
-  ]).catch(() => {
-    console.warn(`Promise timeout after ${timeoutMs}ms`);
-    return Promise.resolve(undefined as T);
-  });
-};
+export function currency(
+  value: number | string,
+  options = { style: 'currency' as const, currency: 'IDR' as const }
+): string {
+  return Intl.NumberFormat('id-ID', options).format(Number(value));
+}
 
+export function uncurrency(value: string) {
+ 
+  return Number(
+    value
+      .replace(/[^\d,.-]/g, '')
+      .replace(/\./g, '')
+      .replace(/,/g, '.')
+  );
+}
+
+export function blockElement(element: HTMLElement | string) {
+  if (typeof element === 'string') {
+    element = document.querySelector(element) as HTMLElement;
+  }
+
+  if (!element.dataset.originalPosition) {
+    element.dataset.originalPosition = element.style.position || '';
+  }
+
+  element.style.pointerEvents = 'none';
+  element.style.opacity = '0.5';
+  element.style.position = 'relative';
+
+  if (!element.querySelector('.loading-spinner')) {
+    const spinner = document.createElement('div');
+    spinner.className = 'loading-spinner';
+    spinner.style.position = 'absolute';
+    spinner.style.top = '50%';
+    spinner.style.left = '50%';
+    spinner.style.transform = 'translate(-50%, -50%)';
+    spinner.style.width = '24px';
+    spinner.style.height = '24px';
+    spinner.style.border = '3px solid rgba(0, 0, 0, 0.1)';
+    spinner.style.borderTopColor = 'hsl(var(--primary))';
+    spinner.style.borderRadius = '50%';
+    spinner.style.animation = 'spin 1s linear infinite';
+
+    if (!document.getElementById('spinner-keyframes')) {
+      const style = document.createElement('style');
+      style.id = 'spinner-keyframes';
+      style.textContent = `
+        @keyframes spin {
+          to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    element.appendChild(spinner);
+  }
+}
+
+export function unblockElement(element: HTMLElement | string) {
+  if (typeof element === 'string') {
+    element = document.querySelector(element) as HTMLElement;
+  }
+
+  element.style.pointerEvents = 'auto';
+  element.style.opacity = '1';
+  element.style.position = 'relative';
+
+  element.style.position = element.dataset.originalPosition || '';
+  delete element.dataset.originalPosition;
+
+  const spinner = element.querySelector('.loading-spinner');
+
+  if (spinner) {
+    spinner.remove();
+  }
+}
+
+export function capitalize(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}

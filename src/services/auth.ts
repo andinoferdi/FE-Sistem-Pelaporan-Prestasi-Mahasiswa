@@ -1,99 +1,88 @@
-import { api, setAuthToken, setRefreshToken, clearAuthTokens } from "@/lib/api";
-import {
-  LoginRequest,
-  LoginResponse,
-  RefreshTokenRequest,
-  RefreshTokenResponse,
-  GetProfileResponse,
-  HealthCheckResponse,
-} from "@/types/auth";
-import { LoginUserResponse } from "@/types/user";
+import axios from '@/lib/axios';
+import type { CurrentUserResponse, LoginFormData, LoginResponse, ProfileResponse } from '@/types/auth';
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/auth-context';
 
 export const authService = {
-  async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const response = await api.post<LoginResponse["data"]>(
-      "/api/v1/auth/login",
-      credentials,
-      { skipAuth: true }
-    );
-
-    if (response.status === "success" && response.data) {
-      setAuthToken(response.data.token);
-      setRefreshToken(response.data.refreshToken);
-      
-      if (typeof window !== "undefined") {
-        localStorage.setItem("user", JSON.stringify(response.data.user));
-      }
-
-      try {
-        const healthResponse = await this.healthCheck();
-        if (healthResponse.status === "success" && healthResponse.data?.instanceId) {
-          const { setServerInstanceID } = await import("@/lib/api");
-          setServerInstanceID(healthResponse.data.instanceId);
-        }
-      } catch (error) {
-        console.error("Failed to get server instance ID:", error);
-      }
-    }
-
-    return response as LoginResponse;
+  login: async (data: LoginFormData): Promise<LoginResponse> => {
+    const response = await axios.post<LoginResponse>('/auth/login', {
+      username: data.username,
+      password: data.password
+    });
+    return response.data;
   },
 
-  async logout(): Promise<void> {
+  logout: async (): Promise<void> => {
     try {
-      await api.post("/api/v1/auth/logout");
+      await axios.post('/auth/logout');
     } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
-      clearAuthTokens();
+      console.error('Logout error:', error);
     }
   },
 
-  async refreshToken(refreshToken: string): Promise<RefreshTokenResponse> {
-    const request: RefreshTokenRequest = { refreshToken };
-    const response = await api.post<RefreshTokenResponse["data"]>(
-      "/api/v1/auth/refresh",
-      request,
-      { skipAuth: true, skipRefresh: true }
-    );
+  getCurrentUser: async (): Promise<CurrentUserResponse> => {
+    const response = await axios.get<ProfileResponse>('/auth/profile');
+    if (response.data.status === 'success') {
+      return response.data.data;
+    }
+    throw new Error('Failed to get user profile');
+  },
 
-    if (response.status === "success" && response.data) {
-      setAuthToken(response.data.token);
-      setRefreshToken(response.data.refreshToken);
+  refreshToken: async (refreshToken: string): Promise<{ token: string; refreshToken: string }> => {
+    const response = await axios.post<{ status: string; data: { token: string; refreshToken: string } }>(
+      '/auth/refresh',
+      { refreshToken }
+    );
+    if (response.data.status === 'success') {
+      return response.data.data;
+    }
+    throw new Error('Failed to refresh token');
+  },
+
+  hasPermission: (userData: CurrentUserResponse | null, permission: string): boolean => {
+    if (!permission) {
+      return true;
     }
 
-    return response as RefreshTokenResponse;
-  },
-
-  async getProfile(): Promise<GetProfileResponse> {
-    const response = await api.get<GetProfileResponse["data"]>(
-      "/api/v1/auth/profile"
-    );
-    return response as GetProfileResponse;
-  },
-
-  getStoredUser(): LoginUserResponse | null {
-    if (typeof window === "undefined") return null;
-    const userStr = localStorage.getItem("user");
-    if (!userStr) return null;
-    try {
-      return JSON.parse(userStr) as LoginUserResponse;
-    } catch {
-      return null;
+    if (!userData || !userData.permissions) {
+      return false;
     }
-  },
 
-  isAuthenticated(): boolean {
-    if (typeof window === "undefined") return false;
-    return !!localStorage.getItem("token");
-  },
-
-  async healthCheck(): Promise<HealthCheckResponse> {
-    const response = await api.get<HealthCheckResponse["data"]>(
-      "/api/v1/health",
-      { skipAuth: true }
-    );
-    return response as HealthCheckResponse;
-  },
+    return userData.permissions.includes(permission);
+  }
 };
 
+export const useCurrentUser = () => {
+  const { token } = useAuth();
+
+  return useQuery({
+    queryKey: ['currentUser'],
+    queryFn: authService.getCurrentUser,
+    enabled: !!token,
+    retry: false,
+    retryOnMount: false,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
+  });
+};
+
+export const usePermissions = () => {
+  const { data: currentUser } = useCurrentUser();
+  const { user: contextUser } = useAuth();
+  const userData = currentUser || contextUser;
+
+  const hasPermission = (permission: string): boolean => {
+    return authService.hasPermission(userData, permission);
+  };
+
+  const getUserData = (): CurrentUserResponse | null => {
+    return userData;
+  };
+
+  return {
+    hasPermission,
+    getUserData,
+    userData
+  };
+};

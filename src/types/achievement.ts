@@ -1,5 +1,3 @@
-import { ApiResponse } from "./api";
-
 export type AchievementType =
   | "academic"
   | "competition"
@@ -8,8 +6,6 @@ export type AchievementType =
   | "certification"
   | "other";
 
-export type AchievementStatus = "draft" | "submitted" | "verified" | "rejected" | "deleted";
-
 export type CompetitionLevel =
   | "international"
   | "national"
@@ -17,6 +13,13 @@ export type CompetitionLevel =
   | "local";
 
 export type PublicationType = "journal" | "conference" | "book";
+
+export type AchievementStatus =
+  | "draft"
+  | "submitted"
+  | "verified"
+  | "rejected"
+  | "deleted";
 
 export interface Period {
   start: string;
@@ -31,84 +34,103 @@ export interface Attachment {
 }
 
 export interface AchievementDetails {
-  competitionName?: string;
-  competitionLevel?: CompetitionLevel;
-  rank?: number;
-  medalType?: string;
-  publicationType?: PublicationType;
-  publicationTitle?: string;
-  authors?: string[];
-  publisher?: string;
-  issn?: string;
-  organizationName?: string;
-  position?: string;
-  period?: Period;
-  certificationName?: string;
-  issuedBy?: string;
-  certificationNumber?: string;
-  validUntil?: string;
-  eventDate?: string;
-  location?: string;
-  organizer?: string;
-  score?: number;
-  customFields?: Record<string, unknown>;
+  competitionName?: string | null;
+  competitionLevel?: CompetitionLevel | string | null;
+  rank?: number | null;
+  medalType?: string | null;
+
+  publicationType?: PublicationType | string | null;
+  publicationTitle?: string | null;
+  authors?: string[]; 
+  publisher?: string | null;
+  issn?: string | null;
+
+  organizationName?: string | null;
+  position?: string | null;
+  period?: Period | null;
+
+  certificationName?: string | null;
+  issuedBy?: string | null;
+  certificationNumber?: string | null;
+  validUntil?: string | null;
+
+  eventDate?: string | null;
+  location?: string | null;
+  organizer?: string | null;
+  score?: number | null;
+
+  customFields?: Record<string, unknown> | null;
 }
 
-export interface Achievement {
+export interface AchievementBase {
   id: string;
   studentId: string;
-  achievementType: AchievementType;
+  achievementType: AchievementType | string;
   title: string;
   description: string;
   details: AchievementDetails;
-  attachments?: Attachment[];
+  attachments?: Attachment[] | null;
   tags?: string[];
   points: number;
   createdAt: string;
   updatedAt: string;
-  status?: AchievementStatus;
 }
 
-export interface CreateAchievementRequest {
+
+export type Achievement = AchievementBase & {
+  status?: AchievementStatus | string;
+};
+
+export type AchievementListItem = AchievementBase & {
+  status: AchievementStatus | string;
+};
+
+export interface AchievementStats {
+  total: number;
+  verified: number;
+  percentage: number;
+}
+
+export type ApiSuccess<T> = {
+  status: "success";
+  data: T;
+};
+
+export type ApiError = {
+  status: "error";
+  data: {
+    message: string;
+    [key: string]: unknown;
+  };
+};
+
+export type GetAchievementsResponse = ApiSuccess<AchievementListItem[]>;
+export type GetAchievementByIdResponse = ApiSuccess<Achievement>;
+export type CreateAchievementResponse = ApiSuccess<Achievement>;
+export type UpdateAchievementResponse = ApiSuccess<Achievement>;
+export type DeleteAchievementResponse =
+  | ApiSuccess<null>
+  | ApiSuccess<Record<string, never>>;
+
+export type GetAchievementStatsResponse = ApiSuccess<AchievementStats>;
+
+export type UploadAttachmentResponse = ApiSuccess<Attachment>;
+
+export interface CreateAchievementBody {
   achievementType: AchievementType;
   title: string;
   description: string;
-  details?: AchievementDetails;
-  attachments?: Attachment[];
+  details: AchievementDetails;
   tags?: string[];
   points: number;
 }
 
-export interface UpdateAchievementRequest {
+export interface UpdateAchievementBody {
   achievementType?: AchievementType;
   title?: string;
   description?: string;
   details?: AchievementDetails;
-  attachments?: Attachment[];
   tags?: string[];
   points?: number;
+  attachments?: Attachment[];
 }
-
-export interface AchievementReference {
-  id: string;
-  student_id: string;
-  mongo_achievement_id: string;
-  status: AchievementStatus;
-  submitted_at?: string;
-  verified_at?: string;
-  verified_by?: string;
-  rejection_note?: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export type CreateAchievementResponse = ApiResponse<Achievement>;
-
-export type GetAchievementByIDResponse = ApiResponse<Achievement>;
-
-export type UpdateAchievementResponse = ApiResponse<Achievement>;
-
-export type DeleteAchievementResponse = ApiResponse<null>;
-
-export type SubmitAchievementResponse = ApiResponse<AchievementReference>;
-

@@ -1,47 +1,47 @@
-import type React from "react";
-import type { Metadata } from "next";
-import { Poppins, JetBrains_Mono } from "next/font/google";
-import "./globals.css";
-import { AuthProvider } from "@/stores/auth";
-import { QueryProvider } from "@/providers/query-provider";
-import { LayoutWrapper } from "@/components/home/layout-wrapper";
+import { type ReactNode } from 'react';
+
+import type { Metadata } from 'next';
+import { Poppins } from 'next/font/google';
+
+import '@/app/globals.css';
+import { DashboardLayout } from '@/components/layouts/dashboard-layout';
+import { AuthProvider as AppAuthProvider } from '@/components/providers/auth-provider';
+import { ToastProvider } from '@/components/providers/toast-provider';
+import { AuthProvider } from '@/contexts/auth-context';
+import QueryProvider from '@/components/providers/query-provider';
+import { TitleProvider } from '@/components/providers/title-provider';
 
 const poppins = Poppins({
-  variable: "--font-poppins",
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains",
-  subsets: ["latin"],
-  display: "swap",
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-poppins',
+  display: 'swap'
 });
 
 export const metadata: Metadata = {
-  title:
-    process.env.NEXT_PUBLIC_APP_NAME || "Sistem Pelaporan Prestasi Mahasiswa",
-  description:
-    "Sistem Pelaporan Prestasi Mahasiswa untuk mengelola dan melaporkan prestasi mahasiswa",
+  title: process.env.NEXT_PUBLIC_APP_NAME || 'Sistem Pelaporan Prestasi Mahasiswa',
+  description: process.env.NEXT_PUBLIC_APP_NAME || 'Sistem Pelaporan Prestasi Mahasiswa'
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+const Layout = ({ children }: Readonly<{ children: ReactNode }>) => {
   return (
-    <html lang="id">
+    <html lang='en' className={poppins.variable} suppressHydrationWarning>
       <body
-        className={`${poppins.variable} ${jetbrainsMono.variable} font-sans antialiased`}
-      >
+        className={`${poppins.className} text-foreground bg-white antialiased`}
+        suppressHydrationWarning>
         <QueryProvider>
-          <AuthProvider>
-            <LayoutWrapper>{children}</LayoutWrapper>
-          </AuthProvider>
+          <ToastProvider />
+          <TitleProvider>
+            <AuthProvider>
+              <AppAuthProvider>
+                <DashboardLayout>{children}</DashboardLayout>
+              </AppAuthProvider>
+            </AuthProvider>
+          </TitleProvider>
         </QueryProvider>
       </body>
     </html>
   );
-}
+};
+
+export default Layout;
