@@ -3,7 +3,7 @@
 import React, { memo, useMemo, useState, useRef, useEffect } from "react";
 
 import { AchievementForm, type AchievementFormValues } from "@/blocks/achievement/form";
-import { PageTitle } from "@/components/page-title";
+import { PageTitle } from "@/components/layouts/page-title";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -97,7 +97,7 @@ const getStatusBadge = (status: AchievementStatus) => {
   > = {
     draft: { label: "Draft", variant: "secondary" },
     submitted: { label: "Terkirim", variant: "default" },
-    verified: { label: "Terverifikasi", variant: "default", className: "bg-green-600 text-white border-green-600 hover:bg-green-700" },
+    verified: { label: "Terverifikasi", variant: "default", className: "bg-(--success) text-success-foreground border-(--success) hover:bg-(--success-dark)" },
     rejected: { label: "Ditolak", variant: "destructive" },
     deleted: { label: "Dihapus", variant: "destructive" },
   };
@@ -731,7 +731,7 @@ export default function AchievementPage() {
           <Button
             onClick={handleOpenCreate}
             disabled={isCreating}
-                className="text-white"
+                className="text-primary-foreground"
           >
             <Plus className="mr-2 h-4 w-4" />
             Tambah Prestasi

@@ -28,7 +28,7 @@ import { useCurrentUser } from "@/services/auth";
 import { useAuth } from "@/contexts/auth-context";
 import { type MenuItem, permissionUtils } from "@/stores/menu-item";
 
-import { ScrollArea } from "./ui/scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Building2, ChevronDown, ChevronUp } from "lucide-react";
 
 // Dropdown generic
@@ -289,7 +289,7 @@ export const AppSidebar = React.memo(function AppSidebar(
         >
           {isCollapsed ? (
             <Image
-              src="/images/logo-mini.svg"
+              src="/images/logo.png"
               alt="logo"
               width={28}
               height={28}
@@ -299,7 +299,7 @@ export const AppSidebar = React.memo(function AppSidebar(
           ) : (
             <>
               <Image
-                src="/images/logo.svg"
+                src="/images/logo.png"
                 alt="logo"
                 width={36}
                 height={36}

@@ -2,15 +2,15 @@
 
 import type React from 'react';
 
-import { AppSidebar } from '@/components/app-sidebar';
+import { AppSidebar } from '@/components/layouts/dashboard-sidebar';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
-import { DashboardHeader } from './dashboard-header';
+import { DashboardHeader } from '@/components/layouts/dashboard-header';
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className='min-h-screen flex-1 bg-gray-50' suppressHydrationWarning>
+    <div className='min-h-screen flex-1 bg-muted' suppressHydrationWarning>
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>

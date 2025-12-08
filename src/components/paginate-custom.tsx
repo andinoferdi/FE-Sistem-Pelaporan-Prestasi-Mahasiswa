@@ -162,9 +162,9 @@ const PaginateCustom = memo(
                         onChange={(e) => setSearch(e.target.value)}
                         type='text'
                         placeholder='Cari di sini...'
-                        className='font-sf-pro h-10 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 pr-10 text-[14px] leading-5 font-normal tracking-[-0.01em] text-gray-700 placeholder-gray-500 focus:border-gray-400 focus:bg-white focus:ring-0 focus:outline-none'
+                        className='font-sf-pro h-10 w-full rounded-lg border border-border bg-muted px-4 pr-10 text-[14px] leading-5 font-normal tracking-[-0.01em] text-foreground placeholder-muted-foreground focus:border-border focus:bg-background focus:ring-0 focus:outline-none'
                       />
-                      <Search className='absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-400' />
+                      <Search className='absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
                     </form>
                   </div>
                   {Plugin && <div className='flex items-center gap-4'>{Plugin}</div>}

@@ -558,7 +558,7 @@ const PaginateTable = memo(
                               className={cn(
                                 "py-4",
                                 (row.original as RowItem).type === "group" &&
-                                  "bg-blue-600/10 dark:bg-blue-300/10"
+                                  "bg-info-light"
                               )}
                               colSpan={Math.max(visibleColumnsCount, 1)}
                             >

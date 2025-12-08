@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-import { useTitleContext } from './providers/title-provider';
+import { useTitleContext } from '@/components/providers/title-provider';
 
 interface PageTitleProps {
   title: string;
@@ -17,3 +17,4 @@ export const PageTitle = ({ title }: PageTitleProps) => {
 
   return null;
 };
+

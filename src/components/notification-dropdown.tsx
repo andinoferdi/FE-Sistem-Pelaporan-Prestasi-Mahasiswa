@@ -92,22 +92,22 @@ const NotificationDropdown = memo(function NotificationDropdown() {
     if (kind === 'chat') {
       return (
         <div className={`${base} bg-emerald-700`}>
-          <MessageCircle className='h-5 w-5 text-white' />
+          <MessageCircle className='h-5 w-5 text-primary-foreground' />
         </div>
       );
     }
     if (kind === 'konsumen') {
       return (
-        <div className={`${base} bg-amber-600`}>
-          <Users className='h-5 w-5 text-white' />
+        <div className={`${base} bg-warning`}>
+          <Users className='h-5 w-5 text-warning-foreground' />
         </div>
       );
     }
-    const bgColors = ['bg-green-600', 'bg-gray-500', 'bg-gray-600'];
+    const bgColors = ['bg-success', 'bg-muted-foreground', 'bg-gray-600'];
     const bgColor = bgColors[index % bgColors.length];
     return (
       <div className={`${base} ${bgColor}`}>
-        <ShoppingCart className='h-5 w-5 text-white' />
+        <ShoppingCart className='h-5 w-5 text-primary-foreground' />
       </div>
     );
   };
@@ -116,7 +116,7 @@ const NotificationDropdown = memo(function NotificationDropdown() {
     () => (
       <Button
         variant='ghost'
-        className='h-auto p-0 font-normal text-orange-500 hover:bg-orange-50 hover:text-orange-600'
+        className='h-auto p-0 font-normal text-warning hover:bg-warning-light hover:text-warning-text'
         disabled={!hasUnread}>
         Mark All as Read
       </Button>
@@ -128,9 +128,9 @@ const NotificationDropdown = memo(function NotificationDropdown() {
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <button aria-label='Buka notifikasi' className='relative inline-flex h-6 w-6 items-center justify-center'>
-          <Bell className='h-6 w-6 cursor-pointer text-gray-600' />
+          <Bell className='h-6 w-6 cursor-pointer text-muted-foreground' />
           {notifCount > 0 && (
-            <span className='font-sf-pro absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 text-[11px] leading-3 font-bold text-white'>
+            <span className='font-sf-pro absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-warning text-[11px] leading-3 font-bold text-warning-foreground'>
               {notifCount}
             </span>
           )}
@@ -152,15 +152,15 @@ const NotificationDropdown = memo(function NotificationDropdown() {
               const text = getMessage(n);
 
               return (
-                <div key={n.id} className='border-b p-4 last:border-b-0 hover:bg-gray-50'>
+                <div key={n.id} className='border-b p-4 last:border-b-0 hover:bg-muted'>
                   <div className='flex items-start gap-3'>
                     {renderIcon(n, index)}
                     <div className='min-w-0 flex-1'>
-                      <p className='mb-2 text-sm text-gray-900'>
+                      <p className='mb-2 text-sm text-foreground'>
                         <span className='font-medium'>{getTitle(n)}</span> {text}
                       </p>
-                      <div className='flex items-center gap-2 text-xs text-gray-500'>
-                        <Badge variant='secondary' className='bg-blue-50 text-blue-600 hover:bg-blue-50'>
+                      <div className='flex items-center gap-2 text-xs text-muted-foreground'>
+                        <Badge variant='secondary' className='bg-info-light text-info-text hover:bg-info-light'>
                           {(kind || '').toString().toUpperCase() || 'TRANSAKSI'}
                         </Badge>
                         <div className='flex items-center gap-1'>
@@ -171,8 +171,8 @@ const NotificationDropdown = memo(function NotificationDropdown() {
                     </div>
                     {isUnread && (
                       <div className='shrink-0'>
-                        <div className='h-2 w-2 rounded-full bg-red-500'></div>
-                        <span className='ml-1 text-lg font-bold text-red-500'>!</span>
+                        <div className='h-2 w-2 rounded-full bg-destructive'></div>
+                        <span className='ml-1 text-lg font-bold text-destructive'>!</span>
                       </div>
                     )}
                   </div>
@@ -180,16 +180,16 @@ const NotificationDropdown = memo(function NotificationDropdown() {
               );
             })
           ) : (
-            <div className='p-6 text-center text-sm text-gray-500'>Tidak ada notifikasi belum dibaca</div>
+            <div className='p-6 text-center text-sm text-muted-foreground'>Tidak ada notifikasi belum dibaca</div>
           )}
         </div>
 
-        <div className='flex items-center justify-between border-t bg-gray-50 p-4'>
+        <div className='flex items-center justify-between border-t bg-muted p-4'>
           {hasUnread && headerRight}
           <Link
             href='/notifikasi'
             onClick={() => setOpen(false)}
-            className='rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700'>
+            className='rounded-md bg-success px-4 py-2 text-success-foreground hover:bg-success-dark'>
             View all notifications
           </Link>
         </div>

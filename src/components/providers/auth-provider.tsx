@@ -29,7 +29,7 @@ const AuthGateScreen = memo(function AuthGateScreen({
 }) {
   return (
     <div className="relative min-h-screen w-full bg-background">
-      <div className="absolute inset-0 bg-linear-to-b from-background via-background to-blue-50/70 dark:to-blue-950/30" />
+      <div className="absolute inset-0 bg-linear-to-b from-background via-background to-(--blue-50)/70 dark:to-(--blue-950)/30" />
 
       <div className="relative flex min-h-screen flex-col items-center justify-center px-6 text-center">
         <Loader2

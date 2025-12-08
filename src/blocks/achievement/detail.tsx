@@ -7,7 +7,7 @@ import { format } from "date-fns";
 import { ArrowLeft, ExternalLink, Loader2, RefreshCw, CheckCircle, XCircle } from "lucide-react";
 import { useState } from "react";
 
-import { PageTitle } from "@/components/page-title";
+import { PageTitle } from "@/components/layouts/page-title";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -43,7 +43,7 @@ const getStatusBadge = (status?: AchievementStatus) => {
   > = {
     draft: { label: "Draft", variant: "secondary" },
     submitted: { label: "Terkirim", variant: "default" },
-    verified: { label: "Terverifikasi", variant: "default", className: "bg-green-600 text-white border-green-600 hover:bg-green-700" },
+    verified: { label: "Terverifikasi", variant: "default", className: "bg-(--success) text-success-foreground border-(--success) hover:bg-(--success-dark)" },
     rejected: { label: "Ditolak", variant: "destructive" },
     deleted: { label: "Dihapus", variant: "destructive" },
   };
@@ -382,7 +382,7 @@ export default function AchievementDetail() {
             <Button
               onClick={handleVerify}
               disabled={verifyMutation.isPending}
-              className="bg-green-600 text-white hover:bg-green-700"
+              className="bg-(--success) text-success-foreground hover:bg-(--success-dark)"
             >
               <CheckCircle className="mr-2 h-4 w-4" />
               {verifyMutation.isPending ? "Memverifikasi..." : "Verifikasi"}
@@ -444,21 +444,21 @@ export default function AchievementDetail() {
           )}
 
           {achievementStatus === "verified" && (achievement.verified_at || achievement.verified_by) && (
-            <div className="mt-4 rounded-md border border-green-200 bg-green-50 p-4">
-              <p className="text-sm font-medium text-green-800">Informasi Verifikasi</p>
+            <div className="mt-4 rounded-md border border-(--success-border) bg-(--success-light) p-4">
+              <p className="text-sm font-medium text-(--success-text-dark)">Informasi Verifikasi</p>
               <div className="mt-2 grid grid-cols-1 gap-2 lg:grid-cols-2">
                 {achievement.verified_at && (
                   <div>
-                    <p className="text-xs text-green-700">Diverifikasi Pada</p>
-                    <p className="text-sm text-green-900">
+                    <p className="text-xs text-success-text-light">Diverifikasi Pada</p>
+                    <p className="text-sm text-(--success-text-dark)">
                       {formatDateSafe(achievement.verified_at)}
                     </p>
                   </div>
                 )}
                 {achievement.verified_by && (
                   <div>
-                    <p className="text-xs text-green-700">Diverifikasi Oleh</p>
-                    <p className="text-sm text-green-900">
+                    <p className="text-xs text-success-text-light">Diverifikasi Oleh</p>
+                    <p className="text-sm text-(--success-text-dark)">
                       {achievement.verified_by}
                     </p>
                   </div>

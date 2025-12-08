@@ -147,7 +147,7 @@ const ProfilePage = memo(function ProfilePage() {
       <section className='p-6'>
         <div className='mx-auto max-w-2xl space-y-6'>
           <Skeleton className='h-8 w-48' />
-          <div className='rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
+          <div className='rounded-lg border border-border bg-card p-6 shadow-sm'>
             <div className='space-y-6'>
               <div className='space-y-2'>
                 <Skeleton className='h-4 w-24' />
@@ -190,16 +190,16 @@ const ProfilePage = memo(function ProfilePage() {
     <section className='p-6'>
       <div className='mx-auto max-w-2xl space-y-6'>
         <div>
-          <h1 className='text-2xl font-bold text-gray-900'>Profile Settings</h1>
-          <p className='mt-1 text-sm text-gray-600'>Update your personal information and profile picture</p>
+          <h1 className='text-2xl font-bold text-foreground'>Profile Settings</h1>
+          <p className='mt-1 text-sm text-muted-foreground'>Update your personal information and profile picture</p>
         </div>
 
-        <div className='rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
+        <div className='rounded-lg border border-border bg-card p-6 shadow-sm'>
           <form onSubmit={handleSubmit(handleFormSubmit)} className='space-y-6'>
             {/* Current Role Display */}
-            <div className='rounded-md bg-blue-50 p-4'>
+            <div className='rounded-md bg-info-light p-4'>
               <div className='flex items-center'>
-                <div className='text-sm text-blue-800'>
+                <div className='text-sm text-info-text'>
                   <strong>Role:</strong> {userRole}
                 </div>
               </div>
@@ -217,7 +217,7 @@ const ProfilePage = memo(function ProfilePage() {
                 disabled={updateProfileMutation.isPending}
                 credits={false}
               />
-              <p className='text-xs text-gray-500'>Recommended: Square image, at least 400x400px. Max size: 2MB</p>
+              <p className='text-xs text-muted-foreground'>Recommended: Square image, at least 400x400px. Max size: 2MB</p>
             </div>
 
             {/* Name Field */}
@@ -230,7 +230,7 @@ const ProfilePage = memo(function ProfilePage() {
                 placeholder='Masukkan nama'
                 disabled={updateProfileMutation.isPending}
               />
-              {errors.name && <p className='text-sm text-red-600'>{errors.name.message}</p>}
+              {errors.name && <p className='text-sm text-destructive'>{errors.name.message}</p>}
             </div>
 
             {/* Email Field */}
@@ -243,7 +243,7 @@ const ProfilePage = memo(function ProfilePage() {
                 placeholder='Masukkan email'
                 disabled={updateProfileMutation.isPending}
               />
-              {errors.email && <p className='text-sm text-red-600'>{errors.email.message}</p>}
+              {errors.email && <p className='text-sm text-destructive'>{errors.email.message}</p>}
             </div>
 
             {/* NIP Field */}
@@ -256,13 +256,13 @@ const ProfilePage = memo(function ProfilePage() {
                 placeholder='Masukkan NIP'
                 disabled={updateProfileMutation.isPending}
               />
-              {errors.nip && <p className='text-sm text-red-600'>{errors.nip.message}</p>}
+              {errors.nip && <p className='text-sm text-destructive'>{errors.nip.message}</p>}
             </div>
 
             {/* Password Section Divider */}
-            <div className='border-t border-gray-200 pt-6'>
-              <h3 className='mb-4 text-lg font-semibold text-gray-900'>Change Password</h3>
-              <p className='mb-4 text-sm text-gray-600'>
+            <div className='border-t border-border pt-6'>
+              <h3 className='mb-4 text-lg font-semibold text-foreground'>Change Password</h3>
+              <p className='mb-4 text-sm text-muted-foreground'>
                 Leave password fields blank if you don't want to change your password
               </p>
             </div>
@@ -288,13 +288,13 @@ const ProfilePage = memo(function ProfilePage() {
                   disabled={updateProfileMutation.isPending}
                   tabIndex={-1}>
                   {showPassword ? (
-                    <EyeOff className='h-4 w-4 text-gray-500' />
+                    <EyeOff className='h-4 w-4 text-muted-foreground' />
                   ) : (
-                    <Eye className='h-4 w-4 text-gray-500' />
+                    <Eye className='h-4 w-4 text-muted-foreground' />
                   )}
                 </Button>
               </div>
-              {errors.password && <p className='text-sm text-red-600'>{errors.password.message}</p>}
+              {errors.password && <p className='text-sm text-destructive'>{errors.password.message}</p>}
             </div>
 
             {/* Password Confirmation Field */}
@@ -318,14 +318,14 @@ const ProfilePage = memo(function ProfilePage() {
                   disabled={updateProfileMutation.isPending}
                   tabIndex={-1}>
                   {showPasswordConfirmation ? (
-                    <EyeOff className='h-4 w-4 text-gray-500' />
+                    <EyeOff className='h-4 w-4 text-muted-foreground' />
                   ) : (
-                    <Eye className='h-4 w-4 text-gray-500' />
+                    <Eye className='h-4 w-4 text-muted-foreground' />
                   )}
                 </Button>
               </div>
               {errors.password_confirmation && (
-                <p className='text-sm text-red-600'>{errors.password_confirmation.message}</p>
+                <p className='text-sm text-destructive'>{errors.password_confirmation.message}</p>
               )}
             </div>
 

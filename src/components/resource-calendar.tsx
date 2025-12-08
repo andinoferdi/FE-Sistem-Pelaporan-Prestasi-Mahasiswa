@@ -146,7 +146,7 @@ export function ResourceCalendar({
           end: availableDate.end,
           resourceId: resourceId,
           display: 'background',
-          backgroundColor: 'rgba(74, 222, 128, 0.4)', 
+          backgroundColor: 'oklch(0.546 0.245 142 / 0.4)', 
           rendering: 'background',
           allDay: true,
           extendedProps: {

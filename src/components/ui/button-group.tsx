@@ -20,7 +20,7 @@ const ButtonGroup = React.forwardRef<HTMLDivElement, ButtonGroupProps>(
     return (
       <div
         ref={ref}
-        className={cn('inline-flex rounded-md border border-gray-300 bg-white p-1 shadow-sm', className)}
+        className={cn('inline-flex rounded-md border border-border bg-card p-1 shadow-sm', className)}
         {...props}>
         {React.Children.map(children, (child) => {
           if (React.isValidElement(child) && child.type === ButtonGroupItem) {
@@ -46,8 +46,8 @@ const ButtonGroupItem = React.forwardRef<HTMLButtonElement, ButtonGroupItemProps
         type='button'
         onClick={onSelect}
         className={cn(
-          'relative inline-flex items-center gap-2 rounded px-4 py-2 text-sm font-medium transition-colors focus:z-10 focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:outline-none',
-          isSelected ? 'bg-teal-600 text-white shadow-sm' : 'bg-white text-gray-700 hover:bg-gray-50',
+          'relative inline-flex items-center gap-2 rounded px-4 py-2 text-sm font-medium transition-colors focus:z-10 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:outline-none',
+          isSelected ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-card text-foreground hover:bg-muted',
           className
         )}
         {...props}>

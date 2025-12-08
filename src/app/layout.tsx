@@ -27,7 +27,7 @@ const Layout = ({ children }: Readonly<{ children: ReactNode }>) => {
   return (
     <html lang='en' className={poppins.variable} suppressHydrationWarning>
       <body
-        className={`${poppins.className} text-foreground bg-white antialiased`}
+        className={`${poppins.className} text-foreground bg-background antialiased`}
         suppressHydrationWarning>
         <QueryProvider>
           <ToastProvider />

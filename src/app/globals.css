@@ -44,6 +44,59 @@
   --app-gold: #daa961;
   --app-gold-light: #e5b96f;
 
+  /* Gray Scale Colors */
+  --gray-50: oklch(0.985 0 0);
+  --gray-100: oklch(0.97 0 0);
+  --gray-200: oklch(0.922 0 0);
+  --gray-300: oklch(0.85 0 0);
+  --gray-400: oklch(0.65 0 0);
+  --gray-500: oklch(0.556 0 0);
+  --gray-600: oklch(0.45 0 0);
+  --gray-700: oklch(0.35 0 0);
+  --gray-900: oklch(0.1776 0 0);
+
+  /* Status Colors - Success (Green) */
+  --success: oklch(0.546 0.245 142);
+  --success-dark: oklch(0.45 0.245 142);
+  --success-light: oklch(0.95 0.05 142);
+  --success-foreground: oklch(1 0 0);
+  --success-text: oklch(0.3 0.2 142);
+  --success-text-light: oklch(0.4 0.2 142);
+  --success-text-dark: oklch(0.2 0.2 142);
+  --success-border: oklch(0.85 0.1 142);
+
+  /* Status Colors - Error (Red) */
+  --error: oklch(0.577 0.245 27.325);
+  --error-light: oklch(0.95 0.05 27);
+  --error-foreground: oklch(1 0 0);
+  --error-text: oklch(0.577 0.245 27.325);
+
+  /* Status Colors - Warning (Orange/Amber) */
+  --warning: oklch(0.7 0.2 70);
+  --warning-dark: oklch(0.6 0.2 70);
+  --warning-light: oklch(0.95 0.05 70);
+  --warning-foreground: oklch(0.2 0 0);
+  --warning-text: oklch(0.7 0.2 70);
+  --warning-text-light: oklch(0.8 0.15 70);
+
+  /* Status Colors - Info (Blue) */
+  --info: oklch(0.623 0.214 259.815);
+  --info-light: oklch(0.95 0.05 260);
+  --info-foreground: oklch(1 0 0);
+  --info-text: oklch(0.5 0.2 260);
+  --blue-50: oklch(0.95 0.05 260);
+  --blue-950: oklch(0.15 0.05 260);
+
+  /* Status Colors - Emerald */
+  --emerald-700: oklch(0.45 0.2 165);
+
+  /* Status Colors - Teal */
+  --teal-500: oklch(0.55 0.15 180);
+  --teal-600: oklch(0.45 0.15 180);
+
+  /* Overlay */
+  --overlay: oklch(0 0 0 / 0.5);
+
   --font-sans: var(--font-poppins), 'Poppins', sans-serif;
   --font-serif: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
@@ -93,6 +146,8 @@
   --sidebar-accent-foreground: oklch(1 0 0);
   --sidebar-border: oklch(0.275 0 0);
   --sidebar-ring: oklch(0.623 0.214 259.815); /* blue-500 */
+  --blue-50: oklch(0.95 0.05 260);
+  --blue-950: oklch(0.15 0.05 260);
   --font-sans: var(--font-poppins), 'Poppins', sans-serif;
   --font-serif: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
@@ -147,6 +202,62 @@
   --color-app-brown-light: var(--app-brown-light);
   --color-app-gold: var(--app-gold);
   --color-app-gold-light: var(--app-gold-light);
+
+  /* Gray Scale Colors */
+  --color-gray-50: var(--gray-50);
+  --color-gray-100: var(--gray-100);
+  --color-gray-200: var(--gray-200);
+  --color-gray-300: var(--gray-300);
+  --color-gray-400: var(--gray-400);
+  --color-gray-500: var(--gray-500);
+  --color-gray-600: var(--gray-600);
+  --color-gray-700: var(--gray-700);
+  --color-gray-900: var(--gray-900);
+
+  /* Status Colors */
+  --color-success: var(--success);
+  --color-success-dark: var(--success-dark);
+  --color-success-light: var(--success-light);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-text: var(--success-text);
+  --color-success-text-light: var(--success-text-light);
+  --color-success-text-dark: var(--success-text-dark);
+  --color-success-border: var(--success-border);
+  
+  /* Tailwind color mappings for success */
+  --color-green-50: var(--success-light);
+  --color-green-200: var(--success-border);
+  --color-green-600: var(--success);
+  --color-green-700: var(--success-dark);
+  --color-green-800: var(--success-text-dark);
+  --color-green-900: var(--success-text-dark);
+
+  --color-error: var(--error);
+  --color-error-light: var(--error-light);
+  --color-error-foreground: var(--error-foreground);
+  --color-error-text: var(--error-text);
+
+  --color-warning: var(--warning);
+  --color-warning-dark: var(--warning-dark);
+  --color-warning-light: var(--warning-light);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-text: var(--warning-text);
+  --color-warning-text-light: var(--warning-text-light);
+
+  --color-info: var(--info);
+  --color-info-light: var(--info-light);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-text: var(--info-text);
+  --color-blue-50: var(--blue-50);
+  --color-blue-950: var(--blue-950);
+
+  --color-emerald-700: var(--emerald-700);
+
+  --color-teal-500: var(--teal-500);
+  --color-teal-600: var(--teal-600);
+
+  /* Overlay */
+  --color-overlay: var(--overlay);
 
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
