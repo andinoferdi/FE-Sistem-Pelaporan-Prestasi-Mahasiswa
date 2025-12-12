@@ -21,22 +21,30 @@ export const authService = {
   },
 
   getCurrentUser: async (): Promise<CurrentUserResponse> => {
-    const response = await axios.get<ProfileResponse>('/auth/profile');
-    if (response.data.status === 'success') {
-      return response.data.data;
+    const response = await axios.get<ProfileResponse | CurrentUserResponse>('/auth/profile');
+    if (response.data && typeof response.data === 'object' && 'status' in response.data) {
+      const wrapped = response.data as ProfileResponse;
+      if (wrapped.status === 'success') {
+        return wrapped.data;
+      }
+      throw new Error('Failed to get user profile');
     }
-    throw new Error('Failed to get user profile');
+    return response.data as CurrentUserResponse;
   },
 
   refreshToken: async (refreshToken: string): Promise<{ token: string; refreshToken: string }> => {
-    const response = await axios.post<{ status: string; data: { token: string; refreshToken: string } }>(
+    const response = await axios.post<{ status: string; data: { token: string; refreshToken: string } } | { token: string; refreshToken: string }>(
       '/auth/refresh',
       { refreshToken }
     );
-    if (response.data.status === 'success') {
-      return response.data.data;
+    if (response.data && typeof response.data === 'object' && 'status' in response.data) {
+      const wrapped = response.data as { status: string; data: { token: string; refreshToken: string } };
+      if (wrapped.status === 'success') {
+        return wrapped.data;
+      }
+      throw new Error('Failed to refresh token');
     }
-    throw new Error('Failed to refresh token');
+    return response.data as { token: string; refreshToken: string };
   },
 
   hasPermission: (userData: CurrentUserResponse | null, permission: string): boolean => {

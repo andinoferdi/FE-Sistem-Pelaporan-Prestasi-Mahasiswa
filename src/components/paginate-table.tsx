@@ -260,10 +260,10 @@ const PaginateTable = memo(
             return res.data;
           } catch (error) {
             console.error("PaginateTable query error:", error);
-            return { status: "success", data: [] };
+            return { data: [], current_page: 1, last_page: 1, total: 0 };
           }
         },
-        placeholderData: { status: "success", data: [] },
+        placeholderData: { data: [], current_page: 1, last_page: 1, total: 0 },
         retry: 1,
         retryDelay: 1000,
         refetchOnWindowFocus: false,

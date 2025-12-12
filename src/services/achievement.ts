@@ -97,21 +97,22 @@ async function apiFetch<T>(
     | unknown;
 
   if (!res.ok) {
-    const errorPayload = payload as ApiError | unknown;
-    const message =
-      typeof errorPayload === "object" &&
-      errorPayload !== null &&
-      "status" in errorPayload &&
-      errorPayload.status === "error" &&
-      "data" in errorPayload &&
-      typeof errorPayload.data === "object" &&
-      errorPayload.data !== null &&
-      "message" in errorPayload.data &&
-      typeof errorPayload.data.message === "string"
-        ? errorPayload.data.message
-        : `Request gagal (${res.status})`;
-
-    throw new Error(message);
+    const errorPayload = payload as { error?: string; message?: string; status?: string; data?: { message?: string } } | unknown;
+    
+    if (typeof errorPayload === "object" && errorPayload !== null) {
+      if ("error" in errorPayload && "message" in errorPayload && typeof errorPayload.message === "string") {
+        throw new Error(errorPayload.message);
+      }
+      
+      if ("status" in errorPayload && errorPayload.status === "error" && "data" in errorPayload) {
+        const data = errorPayload.data;
+        if (data && typeof data === "object" && "message" in data && typeof data.message === "string") {
+          throw new Error(data.message);
+        }
+      }
+    }
+    
+    throw new Error(`Request gagal (${res.status})`);
   }
 
   const successPayload = payload as ApiSuccess<T> | unknown;
