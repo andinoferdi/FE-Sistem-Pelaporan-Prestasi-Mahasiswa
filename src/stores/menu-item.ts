@@ -1,6 +1,6 @@
 import type { CurrentUserResponse } from '@/types/auth';
 
-import { LayoutDashboard, Settings, Trophy, Users } from 'lucide-react';
+import { LayoutDashboard, Settings, Trophy, Users, GraduationCap, UserCog } from 'lucide-react';
 
 type MenuItem = {
   title: string;
@@ -29,6 +29,18 @@ const menuItems: MenuItem[] = [
     title: 'Manajemen User',
     url: '/user',
     icon: Users,
+    code: 'user:manage'
+  },
+  {
+    title: 'Daftar Mahasiswa',
+    url: '/students',
+    icon: GraduationCap,
+    code: 'user:manage'
+  },
+  {
+    title: 'Daftar Dosen Wali',
+    url: '/lecturers',
+    icon: UserCog,
     code: 'user:manage'
   },
   {

@@ -145,7 +145,7 @@ export default function UserDetail() {
     queryFn: () => getStudentByUserId(userId),
     enabled: Boolean(userId) && isMahasiswa,
     retry: false,
-  });
+      });
 
   const lecturerProfileQuery = useQuery<Lecturer | null>({
     queryKey: ["lecturers", "by-user", userId],
@@ -259,7 +259,7 @@ export default function UserDetail() {
         <PageTitle title="Detail User" />
         <div className="mt-4 p-4 border rounded-lg">
           <p className="text-muted-foreground">Anda tidak memiliki akses untuk melihat halaman ini.</p>
-        </div>
+            </div>
       </section>
     );
   }
@@ -270,7 +270,7 @@ export default function UserDetail() {
         <PageTitle title="Detail User" />
         <div className="mt-4 flex items-center justify-center p-8">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
+            </div>
       </section>
     );
   }
@@ -281,14 +281,14 @@ export default function UserDetail() {
         <PageTitle title="Detail User" />
         <div className="mt-4 p-4 border rounded-lg">
           <p className="text-destructive">Gagal memuat data user. {getErrorMessage(error)}</p>
-          <Button
-            variant="outline"
+              <Button
+                variant="outline"
             onClick={() => refetch()}
             className="mt-4"
           >
             Coba Lagi
-          </Button>
-        </div>
+              </Button>
+            </div>
       </section>
     );
   }
@@ -296,14 +296,14 @@ export default function UserDetail() {
   return (
     <section className="p-4">
       <div className="mb-4">
-        <Button
+            <Button
           variant="outline"
           onClick={() => router.back()}
           className="mb-4"
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Kembali
-        </Button>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Kembali
+          </Button>
         <PageTitle title="Detail User" />
       </div>
 
@@ -338,15 +338,15 @@ export default function UserDetail() {
               <div>
                 <Label className="text-muted-foreground">Status</Label>
                 <div>{getStatusBadge(user.is_active)}</div>
-              </div>
+            </div>
               <div>
                 <Label className="text-muted-foreground">Dibuat</Label>
                 <p>{formatDateSafe(user.created_at)}</p>
-              </div>
+            </div>
               <div>
                 <Label className="text-muted-foreground">Diupdate</Label>
                 <p>{formatDateSafe(user.updated_at)}</p>
-              </div>
+          </div>
             </div>
           </CardContent>
         </Card>
@@ -355,10 +355,10 @@ export default function UserDetail() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <div>
+                  <div>
                   <CardTitle>Profil Mahasiswa</CardTitle>
                   <CardDescription>Data profil mahasiswa</CardDescription>
-                </div>
+                  </div>
                 {!hasStudentProfile && (
                   <Button
                     onClick={() => setOpenStudentProfile(true)}
@@ -390,7 +390,7 @@ export default function UserDetail() {
                       <Label className="text-muted-foreground">Dosen Pembimbing</Label>
                       <p className="font-mono text-sm">{studentProfile.advisor_id || "-"}</p>
                     </div>
-                    <div>
+                  <div>
                       <Label className="text-muted-foreground">Dibuat</Label>
                       <p>{formatDateSafe(studentProfile.created_at)}</p>
                     </div>
@@ -441,16 +441,16 @@ export default function UserDetail() {
                   <div>
                     <Label className="text-muted-foreground">Lecturer ID</Label>
                     <p className="font-medium">{lecturerProfile.lecturer_id}</p>
-                  </div>
-                  <div>
+            </div>
+            <div>
                     <Label className="text-muted-foreground">Departemen</Label>
                     <p>{lecturerProfile.department || "-"}</p>
-                  </div>
-                  <div>
+            </div>
+            <div>
                     <Label className="text-muted-foreground">Dibuat</Label>
                     <p>{formatDateSafe(lecturerProfile.created_at)}</p>
-                  </div>
-                </div>
+            </div>
+          </div>
               ) : (
                 <p className="text-muted-foreground">User belum memiliki profil dosen wali.</p>
               )}
@@ -491,7 +491,7 @@ export default function UserDetail() {
                 placeholder="Masukkan program studi"
                 disabled={createStudentMutation.isPending}
               />
-            </div>
+          </div>
             <div className="space-y-2">
               <Label htmlFor="academic_year">Tahun Akademik</Label>
               <Input
@@ -503,7 +503,7 @@ export default function UserDetail() {
                 placeholder="Masukkan tahun akademik"
                 disabled={createStudentMutation.isPending}
               />
-            </div>
+                  </div>
             <div className="space-y-2">
               <Label htmlFor="advisor_id">Dosen Pembimbing (Opsional)</Label>
               <Select
@@ -535,12 +535,12 @@ export default function UserDetail() {
             >
               Batal
             </Button>
-            <Button
+                        <Button
               onClick={handleCreateStudentProfile}
               disabled={createStudentMutation.isPending || !studentForm.student_id.trim()}
             >
               {createStudentMutation.isPending ? "Menyimpan..." : "Simpan"}
-            </Button>
+                        </Button>
           </div>
         </DialogContent>
       </Dialog>
