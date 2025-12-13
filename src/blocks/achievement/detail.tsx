@@ -16,7 +16,7 @@ import { getAchievementById, verifyAchievement, rejectAchievement } from "@/serv
 import type { AchievementStatus } from "@/types/achievement";
 import { useAuth } from "@/contexts/auth-context";
 import { useCurrentUser } from "@/services/auth";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useInvalidateMutation } from "@/hooks/use-invalidate-mutation";
 import { toast } from "react-toastify";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -127,7 +127,6 @@ const getErrorMessage = (err: unknown) => {
 export default function AchievementDetail() {
   const router = useRouter();
   const params = useParams<{ id?: string | string[] }>();
-  const queryClient = useQueryClient();
   const { user: contextUser } = useAuth();
   const { data: currentUser } = useCurrentUser();
   const userData = currentUser || contextUser;
@@ -257,19 +256,19 @@ export default function AchievementDetail() {
     await refetch();
   };
 
-  const verifyMutation = useMutation({
+  const verifyMutation = useInvalidateMutation({
     mutationFn: (id: string) => verifyAchievement(id),
+    invalidates: [["achievements"]],
     onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ["achievements"] });
       toast.success("Prestasi berhasil diverifikasi");
       await refetch();
     },
   });
 
-  const rejectMutation = useMutation({
+  const rejectMutation = useInvalidateMutation({
     mutationFn: ({ id, note }: { id: string; note: string }) => rejectAchievement(id, note),
+    invalidates: [["achievements"]],
     onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ["achievements"] });
       toast.success("Prestasi berhasil ditolak");
       setOpenReject(false);
       setRejectionNote("");

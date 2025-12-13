@@ -4,8 +4,9 @@ import * as React from 'react';
 import Link from 'next/link';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useLecturerReport } from '@/services/reports';
+import { useLecturerReport, useCurrentLecturerReport } from '@/services/reports';
 import type { AchievementType } from '@/types/achievement';
+import type { LecturerReportData } from '@/types/reports';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { UserCog, Users, Trophy, GraduationCap } from 'lucide-react';
 
@@ -19,11 +20,17 @@ const achievementTypeConfig: Record<AchievementType, { label: string; color: str
 };
 
 interface LecturerReportCardProps {
-  lecturerId: string;
+  lecturerId?: string;
+  data?: LecturerReportData;
 }
 
-export default function LecturerReportCard({ lecturerId }: LecturerReportCardProps) {
-  const { data, isLoading, error } = useLecturerReport(lecturerId);
+export default function LecturerReportCard({ lecturerId, data: propData }: LecturerReportCardProps) {
+  const { data: dataFromId, isLoading: isLoadingFromId, error: errorFromId } = useLecturerReport(propData ? null : (lecturerId || null));
+  const { data: currentData, isLoading: isLoadingCurrent, error: errorCurrent } = useCurrentLecturerReport(!propData && !lecturerId);
+
+  const data = propData || dataFromId || currentData;
+  const isLoading = propData ? false : (isLoadingFromId || isLoadingCurrent);
+  const error = propData ? null : (errorFromId || errorCurrent);
 
   if (isLoading) {
     return (

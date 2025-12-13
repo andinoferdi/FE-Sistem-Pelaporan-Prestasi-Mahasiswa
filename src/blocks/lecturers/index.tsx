@@ -3,7 +3,6 @@
 import React, { memo, useMemo, useRef } from "react";
 
 import { PageTitle } from "@/components/layouts/page-title";
-import { Button } from "@/components/ui/button";
 import { PaginateTable, type PaginateTableRef } from "@/components/paginate-table";
 
 import { usePermissions } from "@/services/auth";
@@ -47,7 +46,7 @@ export default function LecturerPage() {
       },
       {
         accessorKey: "lecturer_id",
-        header: "Lecturer ID",
+        header: "NIDN",
         meta: { style: { minWidth: "120px" } },
         cell: ({ row }) => (
           <span className="text-sm font-medium">{row.original.lecturer_id}</span>

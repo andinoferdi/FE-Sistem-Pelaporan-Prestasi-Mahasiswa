@@ -4,8 +4,9 @@ import * as React from 'react';
 import Link from 'next/link';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useStudentReport } from '@/services/reports';
+import { useStudentReport, useCurrentStudentReport } from '@/services/reports';
 import type { AchievementType } from '@/types/achievement';
+import type { StudentReportData } from '@/types/reports';
 import { Badge } from '@/components/ui/badge';
 import { GraduationCap, Trophy, CheckCircle2, Clock } from 'lucide-react';
 
@@ -26,11 +27,17 @@ const statusConfig: Record<string, { label: string; color: string; icon: React.E
 };
 
 interface StudentReportCardProps {
-  studentId: string;
+  studentId?: string;
+  data?: StudentReportData;
 }
 
-export default function StudentReportCard({ studentId }: StudentReportCardProps) {
-  const { data, isLoading, error } = useStudentReport(studentId);
+export default function StudentReportCard({ studentId, data: propData }: StudentReportCardProps) {
+  const { data: dataFromId, isLoading: isLoadingFromId, error: errorFromId } = useStudentReport(propData ? null : (studentId || null));
+  const { data: currentData, isLoading: isLoadingCurrent, error: errorCurrent } = useCurrentStudentReport(!propData && !studentId);
+
+  const data = propData || dataFromId || currentData;
+  const isLoading = propData ? false : (isLoadingFromId || isLoadingCurrent);
+  const error = propData ? null : (errorFromId || errorCurrent);
 
   if (isLoading) {
     return (

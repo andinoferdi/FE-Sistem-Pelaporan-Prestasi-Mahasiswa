@@ -113,7 +113,7 @@ const LoadingOverlay = ({ isLoading }: { isLoading: boolean }) => {
     <div className="bg-background/80 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
       <div className="flex flex-col items-center gap-2">
         <Loader2 className="text-primary h-8 w-8 animate-spin" />
-        <p className="text-muted-foreground text-sm">Loading...</p>
+        <p className="text-muted-foreground text-sm">Memuat...</p>
       </div>
     </div>
   );
@@ -419,15 +419,15 @@ const PaginateTable = memo(
                       variant="outline"
                       size="sm"
                       className="ml-auto flex h-8 items-center gap-1"
-                      aria-label="View columns"
+                      aria-label="Tampilkan kolom"
                     >
                       <Settings2 className="h-4 w-4" />
-                      <span>View</span>
+                      <span>Tampilkan</span>
                     </Button>
                   </DropdownMenuTrigger>
 
                   <DropdownMenuContent align="end" className="w-[180px]">
-                    <DropdownMenuLabel>Show columns</DropdownMenuLabel>
+                    <DropdownMenuLabel>Tampilkan kolom</DropdownMenuLabel>
                     <DropdownMenuSeparator />
 
                     {hideableColumns.map((column) => {
@@ -442,7 +442,7 @@ const PaginateTable = memo(
                             e.preventDefault();
                             toggleColumnVisibility(column.id);
                           }}
-                          aria-label={`Toggle column ${label}`}
+                          aria-label={`Toggle kolom ${label}`}
                         >
                           <Checkbox
                             checked={isVisible}
@@ -516,7 +516,7 @@ const PaginateTable = memo(
                                   onCheckedChange={(checked) =>
                                     handleMassSelect(Boolean(checked))
                                   }
-                                  aria-label="Select all"
+                                  aria-label="Pilih semua"
                                 />
                               </div>
                             ) : header.isPlaceholder ? null : (
@@ -605,7 +605,7 @@ const PaginateTable = memo(
                           className="h-24 text-center"
                         >
                           <p className="text-muted-foreground text-sm">
-                            Data not found
+                            Data tidak ditemukan
                           </p>
                         </TableCell>
                       </TableRow>
@@ -621,7 +621,7 @@ const PaginateTable = memo(
               <div className="flex flex-1 shrink-0 items-center gap-2">
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground text-sm">
-                    Rows per page
+                    Baris per halaman
                   </span>
 
                   <DropdownMenu>
@@ -630,7 +630,7 @@ const PaginateTable = memo(
                         variant="outline"
                         size="sm"
                         className="flex h-8 items-center gap-1"
-                        aria-label="Rows per page"
+                        aria-label="Baris per halaman"
                       >
                         {per} <ChevronDown className="h-4 w-4" />
                       </Button>
@@ -645,7 +645,7 @@ const PaginateTable = memo(
                             e.preventDefault();
                             setPer(option.value);
                           }}
-                          aria-label={`Set rows per page ${option.label}`}
+                          aria-label={`Atur baris per halaman ${option.label}`}
                         >
                           <span className="text-sm">{option.label}</span>
                           <span
@@ -663,7 +663,7 @@ const PaginateTable = memo(
                 </div>
 
                 <div className="text-muted-foreground text-sm">
-                  Page {data.current_page || 1} of {data.last_page || 1}
+                  Halaman {data.current_page || 1} dari {data.last_page || 1}
                 </div>
               </div>
 
@@ -677,7 +677,7 @@ const PaginateTable = memo(
                           "pointer-events-none opacity-50"
                       )}
                       onClick={handlePrevPage}
-                      aria-label="Previous page"
+                      aria-label="Halaman sebelumnya"
                     />
                   </PaginationItem>
 
@@ -687,7 +687,7 @@ const PaginateTable = memo(
                         isActive={item === page}
                         className="cursor-pointer"
                         onClick={() => setPage(item)}
-                        aria-label={`Page ${item}`}
+                        aria-label={`Halaman ${item}`}
                       >
                         {item}
                       </PaginationLink>
@@ -702,7 +702,7 @@ const PaginateTable = memo(
                           "pointer-events-none opacity-50"
                       )}
                       onClick={handleNextPage}
-                      aria-label="Next page"
+                      aria-label="Halaman berikutnya"
                     />
                   </PaginationItem>
                 </PaginationContent>

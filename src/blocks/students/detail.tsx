@@ -11,8 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { getStudentById, getStudentAchievements } from "@/services/students";
-import type { Student } from "@/types/students";
-import type { AchievementListItem } from "@/types/achievement";
 import { usePermissions } from "@/services/auth";
 import Link from "next/link";
 
@@ -131,7 +129,7 @@ export default function StudentDetail() {
                 <p className="text-sm font-mono">{student.id}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Student ID</p>
+                <p className="text-sm font-medium text-muted-foreground">NIM</p>
                 <p className="text-sm">{student.student_id}</p>
               </div>
               <div>
@@ -147,7 +145,7 @@ export default function StudentDetail() {
                 <p className="text-sm">{student.academic_year || "-"}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Advisor ID</p>
+                <p className="text-sm font-medium text-muted-foreground">ID Dosen Wali</p>
                 <p className="text-sm font-mono">{student.advisor_id || "-"}</p>
               </div>
               <div>

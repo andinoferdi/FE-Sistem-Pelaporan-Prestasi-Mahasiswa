@@ -54,7 +54,8 @@ import type {
   UpdateUserRequest,
 } from "@/types/user";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInvalidateMutation } from "@/hooks/use-invalidate-mutation";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, Pencil, Plus, Trash, Eye, UserCog } from "lucide-react";
 import Link from "next/link";
@@ -136,12 +137,11 @@ const ActionCell = memo(function ActionCell({
     });
   };
 
-  const updateMutation = useMutation({
+  const updateMutation = useInvalidateMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateUserRequest }) =>
       updateUser(id, data),
+    invalidates: [["users"], ["roles"], ["lecturers"], ["students"]],
     onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      queryClient.invalidateQueries({ queryKey: ["roles"] });
       await refetchUsersTable();
       toast.success("User berhasil diupdate");
       handleCloseForm();
@@ -151,11 +151,10 @@ const ActionCell = memo(function ActionCell({
     },
   });
 
-  const deleteMutation = useMutation({
+  const deleteMutation = useInvalidateMutation({
     mutationFn: (id: string) => deleteUser(id),
+    invalidates: [["users"], ["roles"], ["lecturers"], ["students"]],
     onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      queryClient.invalidateQueries({ queryKey: ["roles"] });
       await refetchUsersTable();
       toast.success("User berhasil dihapus");
       setOpenDelete(false);
@@ -165,12 +164,11 @@ const ActionCell = memo(function ActionCell({
     },
   });
 
-  const roleMutation = useMutation({
+  const roleMutation = useInvalidateMutation({
     mutationFn: ({ id, roleId }: { id: string; roleId: string }) =>
       updateUserRole(id, roleId),
+    invalidates: [["users"], ["roles"], ["lecturers"], ["students"]],
     onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      queryClient.invalidateQueries({ queryKey: ["roles"] });
       await refetchUsersTable();
       toast.success("Role user berhasil diupdate");
       setOpenRole(false);
@@ -434,12 +432,11 @@ export default function UserPage() {
     }
   }, [pathname, queryClient]);
 
-  const createMutation = useMutation({
+  const createMutation = useInvalidateMutation({
     mutationFn: (data: CreateUserRequest) =>
       createUser(data),
+    invalidates: [["users"], ["roles"], ["lecturers"], ["students"]],
     onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      queryClient.invalidateQueries({ queryKey: ["roles"] });
       await refetchUsersTable();
       toast.success("User berhasil dibuat");
       setOpenCreate(false);

@@ -120,7 +120,7 @@ const NotificationDropdown = memo(function NotificationDropdown() {
         <button aria-label='Buka notifikasi' className='relative inline-flex h-6 w-6 items-center justify-center'>
           <Bell className='h-6 w-6 cursor-pointer text-muted-foreground' />
           {notifCount > 0 && (
-            <span className='font-sf-pro absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-warning text-[11px] leading-3 font-bold text-warning-foreground'>
+            <span className='font-sf-pro absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-yellow-500 text-white text-[11px] leading-3 font-bold'>
               {notifCount}
             </span>
           )}

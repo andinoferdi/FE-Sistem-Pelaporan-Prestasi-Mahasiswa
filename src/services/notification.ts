@@ -5,7 +5,8 @@ import type {
   MarkAsReadResponse,
   MarkAllAsReadResponse,
 } from "@/types/notification";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { useInvalidateMutation } from "@/hooks/use-invalidate-mutation";
 
 export const notificationService = {
   getNotifications: async (page: number = 1, limit: number = 10): Promise<GetNotificationsResponse> => {
@@ -52,24 +53,16 @@ export const useNotificationCount = () => {
 };
 
 export const useMarkAsRead = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
+  return useInvalidateMutation({
     mutationFn: (id: string) => notificationService.markAsRead(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-    },
+    invalidates: [["notifications"]],
   });
 };
 
 export const useMarkAllAsRead = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
+  return useInvalidateMutation({
     mutationFn: () => notificationService.markAllAsRead(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-    },
+    invalidates: [["notifications"]],
   });
 };
 

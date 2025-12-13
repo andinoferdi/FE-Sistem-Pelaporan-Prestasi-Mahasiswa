@@ -1,11 +1,10 @@
 "use client";
 
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 
 import { PageTitle } from "@/components/layouts/page-title";
 import { usePermissions } from "@/services/auth";
-import { getStudentByUserId, getLecturerByUserId } from "@/services/user";
+import { useCurrentStudentReport, useCurrentLecturerReport } from "@/services/reports";
 import AchievementTypeCards from "./achievement-type-cards";
 import AchievementPeriodChart from "./achievement-period-chart";
 import TopStudentsCard from "./top-students-card";
@@ -16,42 +15,52 @@ import LecturerReportCard from "./lecturer-report-card";
 export default function HomePage() {
   const { userData } = usePermissions();
   const userRole = userData?.role || "";
-  const userId = userData?.user_id || "";
 
-  const { data: student } = useQuery({
-    queryKey: ['student', 'byUserId', userId],
-    queryFn: () => getStudentByUserId(userId),
-    enabled: !!userId && userRole === "Mahasiswa",
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-    retry: 1,
-    refetchOnWindowFocus: false,
-  });
+  const { data: studentReport, isLoading: isLoadingStudent } = useCurrentStudentReport(userRole === "Mahasiswa");
+  const { data: lecturerReport, isLoading: isLoadingLecturer } = useCurrentLecturerReport(userRole === "Dosen Wali");
 
-  const { data: lecturer } = useQuery({
-    queryKey: ['lecturer', 'byUserId', userId],
-    queryFn: () => getLecturerByUserId(userId),
-    enabled: !!userId && userRole === "Dosen Wali",
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-    retry: 1,
-    refetchOnWindowFocus: false,
-  });
-
-  if (userRole === "Mahasiswa" && student) {
+  if (userRole === "Mahasiswa") {
     return (
       <section className="space-y-6">
         <PageTitle title="Laporan Prestasi Saya" />
-        <StudentReportCard studentId={student.id} />
+        {isLoadingStudent ? (
+          <div className="space-y-6">
+            <div className="rounded-lg border p-4">
+              <div className="h-6 w-48 animate-pulse rounded bg-gray-200" />
+            </div>
+            <div className="rounded-lg border p-4">
+              <div className="space-y-4">
+                <div className="h-20 w-full animate-pulse rounded bg-gray-200" />
+                <div className="h-32 w-full animate-pulse rounded bg-gray-200" />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <StudentReportCard data={studentReport} />
+        )}
       </section>
     );
   }
 
-  if (userRole === "Dosen Wali" && lecturer) {
+  if (userRole === "Dosen Wali") {
     return (
       <section className="space-y-6">
         <PageTitle title="Laporan Dosen Wali" />
-        <LecturerReportCard lecturerId={lecturer.id} />
+        {isLoadingLecturer ? (
+          <div className="space-y-6">
+            <div className="rounded-lg border p-4">
+              <div className="h-6 w-48 animate-pulse rounded bg-gray-200" />
+            </div>
+            <div className="rounded-lg border p-4">
+              <div className="space-y-4">
+                <div className="h-20 w-full animate-pulse rounded bg-gray-200" />
+                <div className="h-32 w-full animate-pulse rounded bg-gray-200" />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <LecturerReportCard data={lecturerReport} />
+        )}
       </section>
     );
   }

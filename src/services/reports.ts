@@ -190,3 +190,47 @@ export const useLecturerReport = (lecturerId: string | null) => {
     refetchOnWindowFocus: false,
   });
 };
+
+export async function getCurrentStudentReport(
+  opts: ApiOptions = {}
+): Promise<StudentReportData> {
+  return apiFetch<StudentReportData>(
+    `${REPORTS_BASE}/student`,
+    { method: "GET" },
+    opts
+  );
+}
+
+export async function getCurrentLecturerReport(
+  opts: ApiOptions = {}
+): Promise<LecturerReportData> {
+  return apiFetch<LecturerReportData>(
+    `${REPORTS_BASE}/lecturer`,
+    { method: "GET" },
+    opts
+  );
+}
+
+export const useCurrentStudentReport = (enabled: boolean = true) => {
+  return useQuery({
+    queryKey: ['reports', 'student', 'current'],
+    queryFn: getCurrentStudentReport,
+    enabled,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const useCurrentLecturerReport = (enabled: boolean = true) => {
+  return useQuery({
+    queryKey: ['reports', 'lecturer', 'current'],
+    queryFn: getCurrentLecturerReport,
+    enabled,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
+};

@@ -131,7 +131,7 @@ export default function LecturerDetail() {
                 <p className="text-sm font-mono">{lecturer.id}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Lecturer ID</p>
+                <p className="text-sm font-medium text-muted-foreground">NIDN</p>
                 <p className="text-sm">{lecturer.lecturer_id}</p>
               </div>
               <div>

@@ -46,7 +46,7 @@ export default function StudentPage() {
       },
       {
         accessorKey: "student_id",
-        header: "Student ID",
+        header: "NIM",
         meta: { style: { minWidth: "120px" } },
         cell: ({ row }) => (
           <span className="text-sm font-medium">{row.original.student_id}</span>
@@ -78,7 +78,7 @@ export default function StudentPage() {
       },
       {
         accessorKey: "advisor_id",
-        header: "Advisor ID",
+        header: "ID Dosen Wali",
         meta: { style: { width: "120px" } },
         cell: ({ row }) => (
           <span className="font-mono text-xs">{row.original.advisor_id ? row.original.advisor_id.slice(-8) : "-"}</span>

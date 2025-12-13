@@ -58,7 +58,7 @@ const createUserSchema = (roles: Role[] = []) =>
         if (!data.student_id || data.student_id.trim() === "") {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: "Student ID wajib diisi",
+            message: "NIM wajib diisi",
             path: ["student_id"],
           });
         }
@@ -68,7 +68,7 @@ const createUserSchema = (roles: Role[] = []) =>
         if (!data.lecturer_id || data.lecturer_id.trim() === "") {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: "Lecturer ID wajib diisi",
+            message: "NIDN wajib diisi",
             path: ["lecturer_id"],
           });
         }
@@ -365,11 +365,11 @@ export function UserForm({
               name="student_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Student ID</FormLabel>
+                  <FormLabel>NIM</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
-                      placeholder="Masukkan student ID"
+                      placeholder="Masukkan NIM"
                       disabled={submitting}
                     />
                   </FormControl>
@@ -489,11 +489,11 @@ export function UserForm({
               name="lecturer_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Lecturer ID</FormLabel>
+                  <FormLabel>NIDN</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
-                      placeholder="Masukkan lecturer ID"
+                      placeholder="Masukkan NIDN"
                       disabled={submitting}
                     />
                   </FormControl>

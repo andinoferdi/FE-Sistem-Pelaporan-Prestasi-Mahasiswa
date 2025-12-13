@@ -2,7 +2,8 @@
 
 import React, { useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { useInvalidateMutation } from "@/hooks/use-invalidate-mutation";
 import { format } from "date-fns";
 import { ArrowLeft, Loader2, UserPlus, GraduationCap, UserCog } from "lucide-react";
 
@@ -78,7 +79,6 @@ const getErrorMessage = (err: unknown) => {
 export default function UserDetail() {
   const router = useRouter();
   const params = useParams<{ id?: string | string[] }>();
-  const queryClient = useQueryClient();
   const { hasPermission } = usePermissions();
 
   const canManage = hasPermission("user:manage");
@@ -159,12 +159,11 @@ export default function UserDetail() {
   const hasStudentProfile = !!studentProfile;
   const hasLecturerProfile = !!lecturerProfile;
 
-  const createStudentMutation = useMutation({
+  const createStudentMutation = useInvalidateMutation({
     mutationFn: (data: CreateStudentRequest) =>
       createStudentProfile(userId, data),
+    invalidates: [["students"], ["users", userId]],
     onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ["students"] });
-      queryClient.invalidateQueries({ queryKey: ["users", userId] });
       await studentProfileQuery.refetch();
       toast.success("Student profile berhasil dibuat");
       setOpenStudentProfile(false);
@@ -180,13 +179,11 @@ export default function UserDetail() {
     },
   });
 
-  const createLecturerMutation = useMutation({
+  const createLecturerMutation = useInvalidateMutation({
     mutationFn: (data: CreateLecturerRequest) =>
       createLecturerProfile(userId, data),
+    invalidates: [["lecturers"], ["roles"], ["users", userId]],
     onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ["lecturers"] });
-      queryClient.invalidateQueries({ queryKey: ["roles"] });
-      queryClient.invalidateQueries({ queryKey: ["users", userId] });
       await lecturerProfileQuery.refetch();
       toast.success("Lecturer profile berhasil dibuat");
       setOpenLecturerProfile(false);
@@ -200,12 +197,11 @@ export default function UserDetail() {
     },
   });
 
-  const updateAdvisorMutation = useMutation({
+  const updateAdvisorMutation = useInvalidateMutation({
     mutationFn: ({ studentId, advisorId }: { studentId: string; advisorId: string }) =>
       updateStudentAdvisor(studentId, advisorId),
+    invalidates: [["students"], ["lecturers"]],
     onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ["students"] });
-      queryClient.invalidateQueries({ queryKey: ["lecturers"] });
       await studentProfileQuery.refetch();
       toast.success("Advisor berhasil diupdate");
       setOpenAdvisor(false);
@@ -218,7 +214,7 @@ export default function UserDetail() {
 
   const handleCreateStudentProfile = async () => {
     if (!studentForm.student_id.trim()) {
-      toast.error("Student ID wajib diisi");
+      toast.error("NIM wajib diisi");
       return;
     }
     try {
@@ -230,7 +226,7 @@ export default function UserDetail() {
 
   const handleCreateLecturerProfile = async () => {
     if (!lecturerForm.lecturer_id.trim()) {
-      toast.error("Lecturer ID wajib diisi");
+      toast.error("NIDN wajib diisi");
       return;
     }
     try {
@@ -377,7 +373,7 @@ export default function UserDetail() {
                 <div className="space-y-4">
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <Label className="text-muted-foreground">Student ID</Label>
+                      <Label className="text-muted-foreground">NIM</Label>
                       <p className="font-medium">{studentProfile.student_id}</p>
                     </div>
                     <div>
@@ -441,7 +437,7 @@ export default function UserDetail() {
               {hasLecturerProfile ? (
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <Label className="text-muted-foreground">Lecturer ID</Label>
+                    <Label className="text-muted-foreground">NIDN</Label>
                     <p className="font-medium">{lecturerProfile.lecturer_id}</p>
             </div>
             <div>
@@ -471,14 +467,14 @@ export default function UserDetail() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="student_id">Student ID *</Label>
+              <Label htmlFor="student_id">NIM *</Label>
               <Input
                 id="student_id"
                 value={studentForm.student_id}
                 onChange={(e) =>
                   setStudentForm({ ...studentForm, student_id: e.target.value })
                 }
-                placeholder="Masukkan student ID"
+                placeholder="Masukkan NIM"
                 disabled={createStudentMutation.isPending}
               />
             </div>
@@ -557,14 +553,14 @@ export default function UserDetail() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="lecturer_id">Lecturer ID *</Label>
+              <Label htmlFor="lecturer_id">NIDN *</Label>
               <Input
                 id="lecturer_id"
                 value={lecturerForm.lecturer_id}
                 onChange={(e) =>
                   setLecturerForm({ ...lecturerForm, lecturer_id: e.target.value })
                 }
-                placeholder="Masukkan lecturer ID"
+                placeholder="Masukkan NIDN"
                 disabled={createLecturerMutation.isPending}
               />
             </div>

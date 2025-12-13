@@ -55,7 +55,8 @@ import type {
   UpdateAchievementBody,
 } from "@/types/achievement";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInvalidateMutation } from "@/hooks/use-invalidate-mutation";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, Pencil, Plus, Trash, Send, Eye, CheckCircle, XCircle } from "lucide-react";
 import Link from "next/link";
@@ -167,20 +168,20 @@ const ActionCell = memo(function ActionCell({
     });
   };
 
-  const updateMutation = useMutation({
+  const updateMutation = useInvalidateMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateAchievementBody }) =>
       updateAchievement(id, data),
+    invalidates: [["achievements"]],
     onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ["achievements"] });
       await refetchAchievementsTable();
     },
   });
 
-  const deleteMutation = useMutation({
+  const deleteMutation = useInvalidateMutation({
     mutationFn: (id: string) => deleteAchievement(id),
+    invalidates: [["achievements"]],
     onSuccess: async (_data, id) => {
-      queryClient.invalidateQueries({ queryKey: ["achievements"] });
-      queryClient.setQueryData(["achievements", id], (old) => {
+      queryClient.setQueryData(["achievements", id], (old: unknown) => {
         if (!old || typeof old !== "object") return old;
         return { ...(old as Record<string, unknown>), status: "deleted" };
       });
@@ -188,11 +189,11 @@ const ActionCell = memo(function ActionCell({
     },
   });
 
-  const submitMutation = useMutation({
+  const submitMutation = useInvalidateMutation({
     mutationFn: (id: string) => submitAchievement(id),
+    invalidates: [["achievements"]],
     onSuccess: async (_data, id) => {
-      queryClient.invalidateQueries({ queryKey: ["achievements"] });
-      queryClient.setQueryData(["achievements", id], (old) => {
+      queryClient.setQueryData(["achievements", id], (old: unknown) => {
         if (!old || typeof old !== "object") return old;
         return { ...(old as Record<string, unknown>), status: "submitted" };
       });
@@ -200,7 +201,7 @@ const ActionCell = memo(function ActionCell({
     },
   });
 
-  const uploadMutation = useMutation({
+  const uploadMutation = useInvalidateMutation({
     mutationFn: ({
       achievementId,
       file,
@@ -208,13 +209,14 @@ const ActionCell = memo(function ActionCell({
       achievementId: string;
       file: File;
     }) => uploadAchievementAttachment(achievementId, file),
+    invalidates: [["achievements"]],
   });
 
-  const verifyMutation = useMutation({
+  const verifyMutation = useInvalidateMutation({
     mutationFn: (id: string) => verifyAchievement(id),
+    invalidates: [["achievements"]],
     onSuccess: async (_data, id) => {
-      queryClient.invalidateQueries({ queryKey: ["achievements"] });
-      queryClient.setQueryData(["achievements", id], (old) => {
+      queryClient.setQueryData(["achievements", id], (old: unknown) => {
         if (!old || typeof old !== "object") return old;
         return { ...(old as Record<string, unknown>), status: "verified" };
       });
@@ -223,11 +225,11 @@ const ActionCell = memo(function ActionCell({
     },
   });
 
-  const rejectMutation = useMutation({
+  const rejectMutation = useInvalidateMutation({
     mutationFn: ({ id, note }: { id: string; note: string }) => rejectAchievement(id, note),
+    invalidates: [["achievements"]],
     onSuccess: async (_data, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ["achievements"] });
-      queryClient.setQueryData(["achievements", id], (old) => {
+      queryClient.setQueryData(["achievements", id], (old: unknown) => {
         if (!old || typeof old !== "object") return old;
         return { ...(old as Record<string, unknown>), status: "rejected" };
       });
@@ -580,16 +582,16 @@ export default function AchievementPage() {
     }
   }, [pathname, queryClient]);
 
-  const createMutation = useMutation({
+  const createMutation = useInvalidateMutation({
     mutationFn: (data: CreateAchievementBody) =>
       createAchievement(data),
+    invalidates: [["achievements"]],
     onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ["achievements"] });
       await refetchAchievementsTable();
     },
   });
 
-  const uploadMutation = useMutation({
+  const uploadMutation = useInvalidateMutation({
     mutationFn: ({
       achievementId,
       file,
@@ -597,6 +599,7 @@ export default function AchievementPage() {
       achievementId: string;
       file: File;
     }) => uploadAchievementAttachment(achievementId, file),
+    invalidates: [["achievements"]],
   });
 
   const columns = useMemo<ColumnDef<AchievementListItem>[]>(
