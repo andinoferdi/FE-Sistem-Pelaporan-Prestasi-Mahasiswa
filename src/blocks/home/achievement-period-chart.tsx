@@ -12,7 +12,7 @@ import { format, parse } from 'date-fns';
 const chartConfig = {
   count: {
     label: 'Total Prestasi',
-    color: '#3b82f6'
+    color: 'var(--chart-primary)'
   }
 } satisfies ChartConfig;
 
@@ -118,13 +118,13 @@ export default function AchievementPeriodChart() {
               top: 20,
               bottom: 20
             }}>
-            <CartesianGrid strokeDasharray='3 3' stroke='#e5e7eb' horizontal={true} vertical={false} />
+            <CartesianGrid strokeDasharray='3 3' stroke='var(--chart-grid)' horizontal={true} vertical={false} />
             <XAxis
               dataKey='month'
               tickLine={false}
               axisLine={false}
               tickMargin={12}
-              tick={{ fontSize: 12, fill: '#9ca3af' }}
+              tick={{ fontSize: 12, fill: 'var(--chart-tick)' }}
               angle={-45}
               textAnchor='end'
               height={80}
@@ -133,7 +133,7 @@ export default function AchievementPeriodChart() {
               tickLine={false}
               axisLine={false}
               tickMargin={12}
-              tick={{ fontSize: 12, fill: '#9ca3af' }}
+              tick={{ fontSize: 12, fill: 'var(--chart-tick)' }}
               domain={[0, yAxisMax]}
             />
             <ChartTooltip
@@ -156,7 +156,7 @@ export default function AchievementPeriodChart() {
             />
             <Bar
               dataKey='count'
-              fill='#3b82f6'
+              fill='var(--chart-primary)'
               radius={[8, 8, 0, 0]}
               name='Total Prestasi'
             />

@@ -91,7 +91,7 @@ export default function TopStudentsCard() {
                 <div className='space-y-3'>
                   <div className='flex items-center justify-between'>
                     <div className='flex min-w-0 flex-1 items-center gap-2 sm:gap-3'>
-                      <Avatar className='h-8 w-8 flex-shrink-0 bg-blue-100 sm:h-10 sm:w-10'>
+                      <Avatar className='h-8 w-8 shrink-0 bg-blue-100 sm:h-10 sm:w-10'>
                         <AvatarFallback className='bg-blue-100'>
                           <GraduationCap className='h-4 w-4 text-blue-600 sm:h-5 sm:w-5' />
                         </AvatarFallback>

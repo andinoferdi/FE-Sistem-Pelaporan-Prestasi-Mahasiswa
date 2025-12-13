@@ -22,16 +22,16 @@ const StatCard = React.memo(
     filledPercentage: number;
   }) => {
     const chartData = [
-      { name: 'filled', value: filledPercentage, fill: 'rgba(255, 255, 255, 0.8)' },
-      { name: 'empty', value: 100 - filledPercentage, fill: 'rgba(255, 255, 255, 0.2)' }
+      { name: 'filled', value: filledPercentage, fill: 'var(--chart-overlay-filled)' },
+      { name: 'empty', value: 100 - filledPercentage, fill: 'var(--chart-overlay-empty)' }
     ];
 
     const chartConfig = {
       filled: {
-        color: 'rgba(255, 255, 255, 0.8)'
+        color: 'var(--chart-overlay-filled)'
       },
       empty: {
-        color: 'rgba(255, 255, 255, 0.2)'
+        color: 'var(--chart-overlay-empty)'
       }
     } satisfies ChartConfig;
 
@@ -72,12 +72,12 @@ const StatCard = React.memo(
 StatCard.displayName = 'StatCard';
 
 const achievementTypeConfig: Record<AchievementType, { label: string; color: string }> = {
-  academic: { label: 'Akademik', color: 'bg-blue-500' },
-  competition: { label: 'Kompetisi', color: 'bg-green-500' },
-  organization: { label: 'Organisasi', color: 'bg-orange-500' },
-  publication: { label: 'Publikasi', color: 'bg-purple-500' },
-  certification: { label: 'Sertifikasi', color: 'bg-pink-500' },
-  other: { label: 'Lainnya', color: 'bg-slate-600' },
+  academic: { label: 'Akademik', color: 'bg-[var(--achievement-academic)]' },
+  competition: { label: 'Kompetisi', color: 'bg-[var(--achievement-competition)]' },
+  organization: { label: 'Organisasi', color: 'bg-[var(--achievement-organization)]' },
+  publication: { label: 'Publikasi', color: 'bg-[var(--achievement-publication)]' },
+  certification: { label: 'Sertifikasi', color: 'bg-[var(--achievement-certification)]' },
+  other: { label: 'Lainnya', color: 'bg-[var(--achievement-other)]' },
 };
 
 export default function AchievementTypeCards() {
@@ -92,7 +92,6 @@ export default function AchievementTypeCards() {
     if (!data?.byType) return [];
 
     const byType = data.byType;
-    const total = Object.values(byType).reduce((sum, count) => sum + count, 0);
     const maxCount = Math.max(...Object.values(byType), 1);
 
     return Object.entries(achievementTypeConfig).map(([type, config]) => {

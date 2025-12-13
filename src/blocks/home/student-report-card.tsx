@@ -10,18 +10,18 @@ import { Badge } from '@/components/ui/badge';
 import { GraduationCap, Trophy, CheckCircle2, Clock } from 'lucide-react';
 
 const achievementTypeConfig: Record<AchievementType, { label: string; color: string }> = {
-  academic: { label: 'Akademik', color: 'bg-blue-500' },
-  competition: { label: 'Kompetisi', color: 'bg-green-500' },
-  organization: { label: 'Organisasi', color: 'bg-orange-500' },
-  publication: { label: 'Publikasi', color: 'bg-purple-500' },
-  certification: { label: 'Sertifikasi', color: 'bg-pink-500' },
-  other: { label: 'Lainnya', color: 'bg-slate-600' },
+  academic: { label: 'Akademik', color: 'bg-[var(--achievement-academic)]' },
+  competition: { label: 'Kompetisi', color: 'bg-[var(--achievement-competition)]' },
+  organization: { label: 'Organisasi', color: 'bg-[var(--achievement-organization)]' },
+  publication: { label: 'Publikasi', color: 'bg-[var(--achievement-publication)]' },
+  certification: { label: 'Sertifikasi', color: 'bg-[var(--achievement-certification)]' },
+  other: { label: 'Lainnya', color: 'bg-[var(--achievement-other)]' },
 };
 
 const statusConfig: Record<string, { label: string; color: string; icon: React.ElementType }> = {
   verified: { label: 'Terverifikasi', color: 'bg-green-100 text-green-800 border-green-300', icon: CheckCircle2 },
   submitted: { label: 'Menunggu Verifikasi', color: 'bg-yellow-100 text-yellow-800 border-yellow-300', icon: Clock },
-  draft: { label: 'Draft', color: 'bg-gray-100 text-gray-800 border-gray-300', icon: Clock },
+  draft: { label: 'Draft', color: 'bg-gray-100 text-gray-900 border-gray-300', icon: Clock },
   rejected: { label: 'Ditolak', color: 'bg-red-100 text-red-800 border-red-300', icon: Clock },
 };
 
@@ -109,25 +109,25 @@ export default function StudentReportCard({ studentId }: StudentReportCardProps)
                 <Trophy className="h-4 w-4 text-blue-600" />
                 Total Points
               </div>
-              <div className="mt-2 text-2xl font-bold text-blue-900">
+              <div className="mt-2 text-2xl font-bold text-blue-950">
                 {statistics.total_points.toLocaleString('id-ID')}
               </div>
             </div>
-            <div className="rounded-lg border bg-green-50 p-4">
+            <div className="rounded-lg border bg-green-100 p-4">
               <div className="flex items-center gap-2 text-sm font-medium text-gray-600">
                 <CheckCircle2 className="h-4 w-4 text-green-600" />
                 Terverifikasi
               </div>
-              <div className="mt-2 text-2xl font-bold text-green-900">
+              <div className="mt-2 text-2xl font-bold text-green-800">
                 {statistics.verified_count}
               </div>
             </div>
-            <div className="rounded-lg border bg-purple-50 p-4">
+            <div className="rounded-lg border bg-purple-500/10 p-4">
               <div className="flex items-center gap-2 text-sm font-medium text-gray-600">
                 <Trophy className="h-4 w-4 text-purple-600" />
                 Total Prestasi
               </div>
-              <div className="mt-2 text-2xl font-bold text-purple-900">
+              <div className="mt-2 text-2xl font-bold text-purple-600">
                 {statistics.total_achievements}
               </div>
             </div>

@@ -10,12 +10,12 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { UserCog, Users, Trophy, GraduationCap } from 'lucide-react';
 
 const achievementTypeConfig: Record<AchievementType, { label: string; color: string }> = {
-  academic: { label: 'Akademik', color: 'bg-blue-500' },
-  competition: { label: 'Kompetisi', color: 'bg-green-500' },
-  organization: { label: 'Organisasi', color: 'bg-orange-500' },
-  publication: { label: 'Publikasi', color: 'bg-purple-500' },
-  certification: { label: 'Sertifikasi', color: 'bg-pink-500' },
-  other: { label: 'Lainnya', color: 'bg-slate-600' },
+  academic: { label: 'Akademik', color: 'bg-[var(--achievement-academic)]' },
+  competition: { label: 'Kompetisi', color: 'bg-[var(--achievement-competition)]' },
+  organization: { label: 'Organisasi', color: 'bg-[var(--achievement-organization)]' },
+  publication: { label: 'Publikasi', color: 'bg-[var(--achievement-publication)]' },
+  certification: { label: 'Sertifikasi', color: 'bg-[var(--achievement-certification)]' },
+  other: { label: 'Lainnya', color: 'bg-[var(--achievement-other)]' },
 };
 
 interface LecturerReportCardProps {
@@ -108,25 +108,25 @@ export default function LecturerReportCard({ lecturerId }: LecturerReportCardPro
                 <Users className="h-4 w-4 text-blue-600" />
                 Total Mahasiswa Bimbingan
               </div>
-              <div className="mt-2 text-2xl font-bold text-blue-900">
+              <div className="mt-2 text-2xl font-bold text-blue-950">
                 {statistics.total_advisees}
               </div>
             </div>
-            <div className="rounded-lg border bg-green-50 p-4">
+            <div className="rounded-lg border bg-green-100 p-4">
               <div className="flex items-center gap-2 text-sm font-medium text-gray-600">
                 <Trophy className="h-4 w-4 text-green-600" />
                 Total Prestasi
               </div>
-              <div className="mt-2 text-2xl font-bold text-green-900">
+              <div className="mt-2 text-2xl font-bold text-green-800">
                 {statistics.total_achievements}
               </div>
             </div>
-            <div className="rounded-lg border bg-purple-50 p-4">
+            <div className="rounded-lg border bg-purple-500/10 p-4">
               <div className="flex items-center gap-2 text-sm font-medium text-gray-600">
                 <Trophy className="h-4 w-4 text-purple-600" />
                 Total Points
               </div>
-              <div className="mt-2 text-2xl font-bold text-purple-900">
+              <div className="mt-2 text-2xl font-bold text-purple-600">
                 {statistics.total_points.toLocaleString('id-ID')}
               </div>
             </div>
@@ -164,7 +164,7 @@ export default function LecturerReportCard({ lecturerId }: LecturerReportCardPro
                   href={`/students/${advisee.student_id}`}
                   className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-gray-50">
                   <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <Avatar className="h-10 w-10 flex-shrink-0 bg-blue-100">
+                    <Avatar className="h-10 w-10 shrink-0 bg-blue-100">
                       <AvatarFallback className="bg-blue-100">
                         <GraduationCap className="h-5 w-5 text-blue-600" />
                       </AvatarFallback>

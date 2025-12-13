@@ -97,6 +97,69 @@
   /* Overlay */
   --overlay: oklch(0 0 0 / 0.5);
 
+  /* Achievement Type Colors */
+  --achievement-academic: oklch(0.546 0.245 262.881);
+  --achievement-competition: oklch(0.546 0.245 142);
+  --achievement-organization: oklch(0.7 0.2 70);
+  --achievement-publication: oklch(0.55 0.22 263);
+  --achievement-certification: oklch(0.7 0.15 340);
+  --achievement-other: oklch(0.45 0 0);
+
+  /* Chart Colors */
+  --chart-primary: oklch(0.546 0.245 262.881);
+  --chart-overlay-filled: oklch(1 0 0 / 0.8);
+  --chart-overlay-empty: oklch(1 0 0 / 0.2);
+
+  /* Competition Level Colors */
+  --competition-international: oklch(0.577 0.245 27.325);
+  --competition-national: oklch(0.546 0.245 262.881);
+  --competition-regional: oklch(0.546 0.245 142);
+  --competition-local: oklch(0.7 0.2 70);
+
+  /* Chart Utility Colors */
+  --chart-grid: oklch(0.922 0 0);
+  --chart-tick: oklch(0.65 0 0);
+
+  /* Blue Color Variants */
+  --blue-100: oklch(0.932 0.032 255.585);
+  --blue-500: oklch(0.623 0.214 259.815);
+  --blue-600: oklch(0.546 0.245 262.881);
+
+  /* Orange Color Variants */
+  --orange-500: oklch(0.7 0.2 70);
+
+  /* Purple Color Variants */
+  --purple-500: oklch(0.55 0.22 263);
+  --purple-600: oklch(0.49 0.22 264);
+
+  /* Pink Color Variants */
+  --pink-500: oklch(0.7 0.15 340);
+
+  /* Slate Color Variants */
+  --slate-600: oklch(0.45 0 0);
+
+  /* Emerald Color Variants */
+  --emerald-500: oklch(0.546 0.245 142);
+
+  /* Amber Color Variants */
+  --amber-500: oklch(0.7 0.2 70);
+
+  /* Green Color Variants */
+  --green-100: oklch(0.95 0.05 142);
+  --green-300: oklch(0.85 0.1 142);
+  --green-600: oklch(0.546 0.245 142);
+  --green-800: oklch(0.2 0.2 142);
+
+  /* Yellow Color Variants */
+  --yellow-100: oklch(0.95 0.05 70);
+  --yellow-300: oklch(0.85 0.1 70);
+  --yellow-800: oklch(0.2 0.2 70);
+
+  /* Red Color Variants */
+  --red-100: oklch(0.95 0.05 27);
+  --red-300: oklch(0.85 0.1 27);
+  --red-800: oklch(0.2 0.2 27);
+
   --font-sans: var(--font-poppins), 'Poppins', sans-serif;
   --font-serif: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
@@ -258,6 +321,69 @@
 
   /* Overlay */
   --color-overlay: var(--overlay);
+
+  /* Achievement Type Colors */
+  --color-achievement-academic: var(--achievement-academic);
+  --color-achievement-competition: var(--achievement-competition);
+  --color-achievement-organization: var(--achievement-organization);
+  --color-achievement-publication: var(--achievement-publication);
+  --color-achievement-certification: var(--achievement-certification);
+  --color-achievement-other: var(--achievement-other);
+
+  /* Chart Colors */
+  --color-chart-primary: var(--chart-primary);
+  --color-chart-overlay-filled: var(--chart-overlay-filled);
+  --color-chart-overlay-empty: var(--chart-overlay-empty);
+
+  /* Competition Level Colors */
+  --color-competition-international: var(--competition-international);
+  --color-competition-national: var(--competition-national);
+  --color-competition-regional: var(--competition-regional);
+  --color-competition-local: var(--competition-local);
+
+  /* Chart Utility Colors */
+  --color-chart-grid: var(--chart-grid);
+  --color-chart-tick: var(--chart-tick);
+
+  /* Blue Color Variants */
+  --color-blue-100: var(--blue-100);
+  --color-blue-500: var(--blue-500);
+  --color-blue-600: var(--blue-600);
+
+  /* Orange Color Variants */
+  --color-orange-500: var(--orange-500);
+
+  /* Purple Color Variants */
+  --color-purple-500: var(--purple-500);
+  --color-purple-600: var(--purple-600);
+
+  /* Pink Color Variants */
+  --color-pink-500: var(--pink-500);
+
+  /* Slate Color Variants */
+  --color-slate-600: var(--slate-600);
+
+  /* Emerald Color Variants */
+  --color-emerald-500: var(--emerald-500);
+
+  /* Amber Color Variants */
+  --color-amber-500: var(--amber-500);
+
+  /* Green Color Variants */
+  --color-green-100: var(--green-100);
+  --color-green-300: var(--green-300);
+  --color-green-600: var(--green-600);
+  --color-green-800: var(--green-800);
+
+  /* Yellow Color Variants */
+  --color-yellow-100: var(--yellow-100);
+  --color-yellow-300: var(--yellow-300);
+  --color-yellow-800: var(--yellow-800);
+
+  /* Red Color Variants */
+  --color-red-100: var(--red-100);
+  --color-red-300: var(--red-300);
+  --color-red-800: var(--red-800);
 
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);

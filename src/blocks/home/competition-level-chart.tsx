@@ -3,35 +3,35 @@
 import * as React from 'react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { type ChartConfig, ChartContainer, ChartTooltip } from '@/components/ui/chart';
 import { useStatistics } from '@/services/reports';
 import type { CompetitionLevel } from '@/types/achievement';
 
 import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts';
 
 const competitionLevelConfig: Record<CompetitionLevel, { label: string; color: string }> = {
-  international: { label: 'Internasional', color: '#ef4444' },
-  national: { label: 'Nasional', color: '#3b82f6' },
-  regional: { label: 'Regional', color: '#10b981' },
-  local: { label: 'Lokal', color: '#f59e0b' },
+  international: { label: 'Internasional', color: 'var(--competition-international)' },
+  national: { label: 'Nasional', color: 'var(--competition-national)' },
+  regional: { label: 'Regional', color: 'var(--competition-regional)' },
+  local: { label: 'Lokal', color: 'var(--competition-local)' },
 };
 
 const chartConfig = {
   international: {
     label: 'Internasional',
-    color: '#ef4444'
+    color: 'var(--competition-international)'
   },
   national: {
     label: 'Nasional',
-    color: '#3b82f6'
+    color: 'var(--competition-national)'
   },
   regional: {
     label: 'Regional',
-    color: '#10b981'
+    color: 'var(--competition-regional)'
   },
   local: {
     label: 'Lokal',
-    color: '#f59e0b'
+    color: 'var(--competition-local)'
   }
 } satisfies ChartConfig;
 
@@ -130,19 +130,19 @@ export default function CompetitionLevelChart() {
               top: 20,
               bottom: 20
             }}>
-            <CartesianGrid strokeDasharray='3 3' stroke='#e5e7eb' horizontal={true} vertical={false} />
+            <CartesianGrid strokeDasharray='3 3' stroke='var(--chart-grid)' horizontal={true} vertical={false} />
             <XAxis
               dataKey='label'
               tickLine={false}
               axisLine={false}
               tickMargin={12}
-              tick={{ fontSize: 12, fill: '#9ca3af' }}
+              tick={{ fontSize: 12, fill: 'var(--chart-tick)' }}
             />
             <YAxis
               tickLine={false}
               axisLine={false}
               tickMargin={12}
-              tick={{ fontSize: 12, fill: '#9ca3af' }}
+              tick={{ fontSize: 12, fill: 'var(--chart-tick)' }}
               domain={[0, yAxisMax]}
             />
             <ChartTooltip
@@ -164,7 +164,7 @@ export default function CompetitionLevelChart() {
             />
             <Bar
               dataKey='count'
-              fill='#3b82f6'
+              fill='var(--chart-primary)'
               radius={[8, 8, 0, 0]}
               name='Total Kompetisi'
             >
