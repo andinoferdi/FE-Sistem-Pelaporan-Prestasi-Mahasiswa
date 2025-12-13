@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,57 +24,66 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+
 import type { User, Role, Lecturer } from "@/types/user";
 import { Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getLecturers } from "@/services/user";
 
-const createUserSchema = (roles: Role[] = []) => z.object({
-  username: z.string().min(1, "Username wajib diisi"),
-  email: z.string().min(1, "Email wajib diisi").email("Email tidak valid"),
-  password: z.string().min(6, "Password minimal 6 karakter"),
-  full_name: z.string().min(1, "Nama lengkap wajib diisi"),
-  role_id: z.string().min(1, "Role wajib dipilih"),
-  is_active: z.boolean().optional(),
-  student_id: z.string().optional(),
-  program_study: z.string().optional(),
-  academic_year: z.string().optional(),
-  advisor_id: z.string().optional(),
-  lecturer_id: z.string().optional(),
-  department: z.string().optional(),
-}).superRefine((data, ctx) => {
-  const selectedRole = roles.find(r => r.id === data.role_id);
-  const roleName = selectedRole?.name.toLowerCase() ?? "";
-  
-  if (roleName === "mahasiswa") {
-    if (!data.student_id || data.student_id.trim() === "") {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Student ID wajib diisi",
-        path: ["student_id"],
-      });
-    }
-  }
-  
-  if (roleName === "dosen wali") {
-    if (!data.lecturer_id || data.lecturer_id.trim() === "") {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Lecturer ID wajib diisi",
-        path: ["lecturer_id"],
-      });
-    }
-  }
-});
+const createUserSchema = (roles: Role[] = []) =>
+  z
+    .object({
+      username: z.string().min(1, "Username wajib diisi"),
+      email: z.string().min(1, "Email wajib diisi").email("Email tidak valid"),
+      password: z.string().min(6, "Password minimal 6 karakter"),
+      full_name: z.string().min(1, "Nama lengkap wajib diisi"),
+      role_id: z.string().min(1, "Role wajib dipilih"),
+      is_active: z.boolean().optional(),
+
+      student_id: z.string().optional(),
+      program_study: z.string().optional(),
+      academic_year: z.string().optional(),
+      advisor_id: z.string().optional(),
+
+      lecturer_id: z.string().optional(),
+      department: z.string().optional(),
+    })
+    .superRefine((data, ctx) => {
+      const selectedRole = (roles ?? []).find(
+        (r) => String(r.id) === String(data.role_id)
+      );
+      const roleName = String(selectedRole?.name ?? "").toLowerCase();
+
+      if (roleName === "mahasiswa") {
+        if (!data.student_id || data.student_id.trim() === "") {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Student ID wajib diisi",
+            path: ["student_id"],
+          });
+        }
+      }
+
+      if (roleName === "dosen wali") {
+        if (!data.lecturer_id || data.lecturer_id.trim() === "") {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Lecturer ID wajib diisi",
+            path: ["lecturer_id"],
+          });
+        }
+      }
+    });
 
 const editUserSchema = z.object({
   username: z.string().min(1, "Username wajib diisi"),
   email: z.string().min(1, "Email wajib diisi").email("Email tidak valid"),
-  password: z.string().optional().refine(
-    (val) => !val || val.length === 0 || val.length >= 6,
-    { message: "Password minimal 6 karakter" }
-  ),
+  password: z
+    .string()
+    .optional()
+    .refine((val) => !val || val.length === 0 || val.length >= 6, {
+      message: "Password minimal 6 karakter",
+    }),
   full_name: z.string().min(1, "Nama lengkap wajib diisi"),
   role_id: z.string().min(1, "Role wajib dipilih"),
   is_active: z.boolean().optional(),
@@ -86,10 +96,12 @@ type CreateUserFormValues = {
   full_name: string;
   role_id: string;
   is_active?: boolean;
+
   student_id?: string;
   program_study?: string;
   academic_year?: string;
   advisor_id?: string;
+
   lecturer_id?: string;
   department?: string;
 };
@@ -123,12 +135,14 @@ export function UserForm({
       email: initialValues?.email ?? "",
       password: "",
       full_name: initialValues?.full_name ?? "",
-      role_id: initialValues?.role_id ?? "",
+      role_id: String(initialValues?.role_id ?? ""),
       is_active: initialValues?.is_active ?? true,
+
       student_id: "",
       program_study: "",
       academic_year: "",
       advisor_id: "",
+
       lecturer_id: "",
       department: "",
     },
@@ -138,14 +152,19 @@ export function UserForm({
     control: form.control,
     name: "role_id",
   });
-  const selectedRole = roles.find(r => r.id === selectedRoleId);
-  const roleName = selectedRole?.name.toLowerCase() ?? "";
 
-  const { data: lecturers = [] } = useQuery<Lecturer[]>({
+  const selectedRole = (roles ?? []).find(
+    (r) => String(r.id) === String(selectedRoleId)
+  );
+  const roleName = String(selectedRole?.name ?? "").toLowerCase();
+
+  const { data: lecturersRaw } = useQuery<Lecturer[]>({
     queryKey: ["lecturers"],
     queryFn: getLecturers,
     enabled: isCreate,
   });
+
+  const lecturers: Lecturer[] = Array.isArray(lecturersRaw) ? lecturersRaw : [];
 
   useEffect(() => {
     if (isCreate && selectedRoleId) {
@@ -155,6 +174,7 @@ export function UserForm({
         form.setValue("academic_year", "");
         form.setValue("advisor_id", "");
       }
+
       if (roleName !== "dosen wali") {
         form.setValue("lecturer_id", "");
         form.setValue("department", "");
@@ -163,22 +183,24 @@ export function UserForm({
   }, [selectedRoleId, roleName, isCreate, form]);
 
   useEffect(() => {
-    if (initialValues) {
-      form.reset({
-        username: initialValues.username ?? "",
-        email: initialValues.email ?? "",
-        password: "",
-        full_name: initialValues.full_name ?? "",
-        role_id: initialValues.role_id ?? "",
-        is_active: initialValues.is_active ?? true,
-        student_id: "",
-        program_study: "",
-        academic_year: "",
-        advisor_id: "",
-        lecturer_id: "",
-        department: "",
-      });
-    }
+    if (!initialValues) return;
+
+    form.reset({
+      username: initialValues.username ?? "",
+      email: initialValues.email ?? "",
+      password: "",
+      full_name: initialValues.full_name ?? "",
+      role_id: String(initialValues.role_id ?? ""),
+      is_active: initialValues.is_active ?? true,
+
+      student_id: "",
+      program_study: "",
+      academic_year: "",
+      advisor_id: "",
+
+      lecturer_id: "",
+      department: "",
+    });
   }, [initialValues, form]);
 
   const handleSubmit = async (values: UserFormValues) => {
@@ -261,7 +283,7 @@ export function UserForm({
                   />
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() => setShowPassword((v) => !v)}
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     disabled={submitting}
                   >
@@ -308,8 +330,9 @@ export function UserForm({
             <FormItem>
               <FormLabel>Role</FormLabel>
               <Select
+                key={`role-${roles.length}`} // aman kalau roles baru keload
                 onValueChange={field.onChange}
-                value={field.value}
+                value={field.value || undefined} // jangan kasih ""
                 disabled={submitting}
               >
                 <FormControl>
@@ -317,10 +340,15 @@ export function UserForm({
                     <SelectValue placeholder="Pilih role" />
                   </SelectTrigger>
                 </FormControl>
+
                 <SelectContent>
-                  {roles.map((role) => (
-                    <SelectItem key={role.id} value={role.id}>
-                      {role.name}
+                  {(roles ?? []).map((role) => (
+                    <SelectItem
+                      key={String(role.id)}
+                      value={String(role.id)}
+                      textValue={String(role.name ?? "")}
+                    >
+                      {role.name ?? "-"}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -392,11 +420,13 @@ export function UserForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Dosen Pembimbing</FormLabel>
+
                   <Select
-                    onValueChange={(value) => {
-                      field.onChange(value === "none" ? "" : value);
-                    }}
-                    value={field.value || "none"}
+                    key={`advisor-${roleName}-${lecturers.length}`} // penting untuk list dinamis
+                    onValueChange={(value) =>
+                      field.onChange(value === "none" ? "" : value)
+                    }
+                    value={field.value ? String(field.value) : "none"}
                     disabled={submitting}
                   >
                     <FormControl>
@@ -404,15 +434,47 @@ export function UserForm({
                         <SelectValue placeholder="Pilih dosen pembimbing (opsional)" />
                       </SelectTrigger>
                     </FormControl>
+
                     <SelectContent>
-                      <SelectItem value="none">Tidak Ada Dosen Pembimbing</SelectItem>
-                      {lecturers.map((lecturer) => (
-                        <SelectItem key={lecturer.id} value={lecturer.id}>
-                          {lecturer.lecturer_id} - {lecturer.full_name || ""} - {lecturer.department}
+                      <SelectItem value="none" textValue="Tidak Ada Dosen Pembimbing">
+                        Tidak Ada Dosen Pembimbing
+                      </SelectItem>
+
+                      {lecturers.length === 0 ? (
+                        <SelectItem
+                          value="__empty"
+                          disabled
+                          textValue="Data dosen kosong"
+                        >
+                          Data dosen kosong
                         </SelectItem>
-                      ))}
+                      ) : (
+                        lecturers
+                          .filter((l) => l?.id != null)
+                          .map((lecturer) => {
+                            const label =
+                              [
+                                lecturer.lecturer_id ?? "",
+                                lecturer.full_name ?? "",
+                                lecturer.department ?? "",
+                              ]
+                                .filter(Boolean)
+                                .join(" - ") || "Dosen";
+
+                            return (
+                              <SelectItem
+                                key={String(lecturer.id)}
+                                value={String(lecturer.id)}
+                                textValue={label}
+                              >
+                                {label}
+                              </SelectItem>
+                            );
+                          })
+                      )}
                     </SelectContent>
                   </Select>
+
                   <FormMessage />
                 </FormItem>
               )}

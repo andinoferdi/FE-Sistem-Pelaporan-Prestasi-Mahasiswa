@@ -141,6 +141,7 @@ const ActionCell = memo(function ActionCell({
       updateUser(id, data),
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["roles"] });
       await refetchUsersTable();
       toast.success("User berhasil diupdate");
       handleCloseForm();
@@ -154,6 +155,7 @@ const ActionCell = memo(function ActionCell({
     mutationFn: (id: string) => deleteUser(id),
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["roles"] });
       await refetchUsersTable();
       toast.success("User berhasil dihapus");
       setOpenDelete(false);
@@ -168,6 +170,7 @@ const ActionCell = memo(function ActionCell({
       updateUserRole(id, roleId),
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["roles"] });
       await refetchUsersTable();
       toast.success("Role user berhasil diupdate");
       setOpenRole(false);
@@ -363,8 +366,12 @@ const ActionCell = memo(function ActionCell({
                 </SelectTrigger>
                 <SelectContent>
                   {(rolesQuery.data ?? []).map((role) => (
-                    <SelectItem key={role.id} value={role.id}>
-                      {role.name}
+                    <SelectItem
+                      key={role.id}
+                      value={String(role.id)}
+                      textValue={String(role.name ?? "")}
+                    >
+                      {role.name ?? "-"}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -432,6 +439,7 @@ export default function UserPage() {
       createUser(data),
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["roles"] });
       await refetchUsersTable();
       toast.success("User berhasil dibuat");
       setOpenCreate(false);

@@ -185,6 +185,7 @@ export default function UserDetail() {
       createLecturerProfile(userId, data),
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["lecturers"] });
+      queryClient.invalidateQueries({ queryKey: ["roles"] });
       queryClient.invalidateQueries({ queryKey: ["users", userId] });
       await lecturerProfileQuery.refetch();
       toast.success("Lecturer profile berhasil dibuat");
@@ -204,6 +205,7 @@ export default function UserDetail() {
       updateStudentAdvisor(studentId, advisorId),
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["students"] });
+      queryClient.invalidateQueries({ queryKey: ["lecturers"] });
       await studentProfileQuery.refetch();
       toast.success("Advisor berhasil diupdate");
       setOpenAdvisor(false);
