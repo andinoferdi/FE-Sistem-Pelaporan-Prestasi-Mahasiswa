@@ -1,6 +1,6 @@
 import type { CurrentUserResponse } from '@/types/auth';
 
-import { LayoutDashboard, Settings, Trophy } from 'lucide-react';
+import { LayoutDashboard, Settings, Trophy, Users } from 'lucide-react';
 
 type MenuItem = {
   title: string;
@@ -24,6 +24,12 @@ const menuItems: MenuItem[] = [
     title: 'Prestasi',
     url: '/achievements',
     icon: Trophy
+  },
+  {
+    title: 'Manajemen User',
+    url: '/user',
+    icon: Users,
+    code: 'user:manage'
   },
   {
     title: 'Pengaturan',

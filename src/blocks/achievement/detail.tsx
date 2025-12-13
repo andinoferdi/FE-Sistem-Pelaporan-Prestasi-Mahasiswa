@@ -168,6 +168,7 @@ export default function AchievementDetail() {
   const detailRows = useMemo<DetailRow[]>(() => {
     if (!achievement) return [];
 
+    const achievementType = achievement.achievementType as string;
     const details =
       (achievement as unknown as { details?: Record<string, unknown> })
         .details ?? {};
@@ -179,64 +180,67 @@ export default function AchievementDetail() {
       rows.push({ label, value: text });
     };
 
-    put("Nama Kompetisi", details.competitionName);
-    if (details.competitionLevel) {
-      rows.push({
-        label: "Level Kompetisi",
-        value: getCompetitionLevelLabel(String(details.competitionLevel)),
-      });
+    if (achievementType === "competition") {
+      put("Nama Kompetisi", details.competitionName);
+      if (details.competitionLevel) {
+        rows.push({
+          label: "Level Kompetisi",
+          value: getCompetitionLevelLabel(String(details.competitionLevel)),
+        });
+      }
+      put("Peringkat", details.rank);
+      put("Jenis Medali", details.medalType);
+    } else if (achievementType === "publication") {
+      if (details.publicationType) {
+        rows.push({
+          label: "Tipe Publikasi",
+          value: getPublicationTypeLabel(String(details.publicationType)),
+        });
+      }
+      put("Judul Publikasi", details.publicationTitle);
+      put("Penulis", details.authors);
+      put("Penerbit", details.publisher);
+      put("ISSN", details.issn);
+    } else if (achievementType === "organization") {
+      put("Nama Organisasi", details.organizationName);
+      put("Posisi", details.position);
+      const period = details.period as unknown as
+        | { start?: string | null; end?: string | null }
+        | null
+        | undefined;
+      if (period?.start || period?.end) {
+        const startText = period.start ? formatDateSafe(period.start) : "-";
+        const endText = period.end ? formatDateSafe(period.end) : "-";
+        rows.push({ label: "Periode", value: `${startText} sampai ${endText}` });
+      }
+    } else if (achievementType === "certification") {
+      put("Nama Sertifikasi", details.certificationName);
+      put("Diterbitkan Oleh", details.issuedBy);
+      put("Nomor Sertifikasi", details.certificationNumber);
+      if (details.validUntil) {
+        rows.push({
+          label: "Berlaku Sampai",
+          value: formatDateSafe(details.validUntil),
+        });
+      }
+    } else if (achievementType === "academic" || achievementType === "other") {
+      if (details.eventDate) {
+        rows.push({
+          label: "Tanggal Kegiatan",
+          value: formatDateSafe(details.eventDate),
+        });
+      }
+      put("Lokasi", details.location);
+      put("Penyelenggara", details.organizer);
+      put("Skor", details.score);
     }
-    put("Peringkat", details.rank);
-    put("Jenis Medali", details.medalType);
 
-    if (details.publicationType) {
-      rows.push({
-        label: "Tipe Publikasi",
-        value: getPublicationTypeLabel(String(details.publicationType)),
-      });
-    }
-    put("Judul Publikasi", details.publicationTitle);
-    put("Penulis", details.authors);
-    put("Penerbit", details.publisher);
-    put("ISSN", details.issn);
-
-    put("Nama Organisasi", details.organizationName);
-    put("Posisi", details.position);
-
-    const period = details.period as unknown as
-      | { start?: string | null; end?: string | null }
-      | null
-      | undefined;
-    if (period?.start || period?.end) {
-      const startText = period.start ? formatDateSafe(period.start) : "-";
-      const endText = period.end ? formatDateSafe(period.end) : "-";
-      rows.push({ label: "Periode", value: `${startText} sampai ${endText}` });
-    }
-
-    put("Nama Sertifikasi", details.certificationName);
-    put("Diterbitkan Oleh", details.issuedBy);
-    put("Nomor Sertifikasi", details.certificationNumber);
-
-    if (details.validUntil)
-      rows.push({
-        label: "Berlaku Sampai",
-        value: formatDateSafe(details.validUntil),
-      });
-    if (details.eventDate)
-      rows.push({
-        label: "Tanggal Kegiatan",
-        value: formatDateSafe(details.eventDate),
-      });
-
-    put("Lokasi", details.location);
-    put("Penyelenggara", details.organizer);
-    put("Skor", details.score);
-
-    if (details.customFields)
+    if (details.customFields) {
       rows.push({
         label: "Field Tambahan",
         value: toText(details.customFields),
       });
+    }
 
     return rows;
   }, [achievement]);

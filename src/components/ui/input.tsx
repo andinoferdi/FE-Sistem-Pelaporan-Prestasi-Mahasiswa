@@ -42,6 +42,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       onChange?.(e);
     };
 
+    const isNumber = inputType === 'number';
+    
     return (
       <input
         ref={ref}
@@ -53,6 +55,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
           'focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
           isCurrency && 'text-end',
+          isNumber && '[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none',
           className
         )}
         maxLength={isCurrency ? 22 : undefined}

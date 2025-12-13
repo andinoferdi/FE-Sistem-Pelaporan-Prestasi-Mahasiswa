@@ -1,18 +1,21 @@
-// @/services/achievement.ts
 import type {
   ApiError,
   ApiSuccess,
-  Achievement,
-  AchievementListItem,
-  AchievementStats,
-  CreateAchievementBody,
-  UpdateAchievementBody,
-  Attachment,
-} from "@/types/achievement";
+  User,
+  CreateUserRequest,
+  UpdateUserRequest,
+  Student,
+  CreateStudentRequest,
+  Lecturer,
+  CreateLecturerRequest,
+  Role,
+} from "@/types/user";
+
+export type { Student, Lecturer };
 
 type ApiOptions = {
-  token?: string; // kalau backend pakai Authorization: Bearer <token>
-  credentials?: RequestCredentials; // kalau backend pakai cookie session
+  token?: string;
+  credentials?: RequestCredentials;
   signal?: AbortSignal;
 };
 
@@ -126,43 +129,39 @@ async function apiFetch<T>(
     return (successPayload as ApiSuccess<T>).data;
   }
 
-  // fallback kalau backend suatu saat balikin raw data
   return payload as T;
 }
 
-/** =========================
- *  ACHIEVEMENTS
- *  ========================= */
+const USERS_BASE = "/api/v1/users";
+const STUDENTS_BASE = "/api/v1/students";
 
-const ACHIEVEMENTS_BASE = "/api/v1/achievements";
-
-export async function getAchievements(
+export async function getUsers(
   opts: ApiOptions = {}
-): Promise<AchievementListItem[]> {
-  return apiFetch<AchievementListItem[]>(
-    `${ACHIEVEMENTS_BASE}`,
+): Promise<User[]> {
+  return apiFetch<User[]>(
+    `${USERS_BASE}`,
     { method: "GET" },
     opts
   );
 }
 
-export async function getAchievementById(
+export async function getUserById(
   id: string,
   opts: ApiOptions = {}
-): Promise<Achievement> {
-  return apiFetch<Achievement>(
-    `${ACHIEVEMENTS_BASE}/${id}`,
+): Promise<User> {
+  return apiFetch<User>(
+    `${USERS_BASE}/${id}`,
     { method: "GET" },
     opts
   );
 }
 
-export async function createAchievement(
-  body: CreateAchievementBody,
+export async function createUser(
+  body: CreateUserRequest,
   opts: ApiOptions = {}
-): Promise<Achievement> {
-  return apiFetch<Achievement>(
-    `${ACHIEVEMENTS_BASE}`,
+): Promise<User> {
+  return apiFetch<User>(
+    `${USERS_BASE}`,
     {
       method: "POST",
       headers: {
@@ -174,27 +173,21 @@ export async function createAchievement(
   );
 }
 
-export async function updateAchievement(
+export async function updateUser(
   id: string,
-  body: UpdateAchievementBody,
+  body: UpdateUserRequest,
   opts: ApiOptions = {}
-): Promise<Achievement> {
-  const attachments = Array.isArray(body.attachments)
-      ? body.attachments
-      : undefined;
-
+): Promise<User> {
   const payload = pickDefined({
-    achievementType: body.achievementType,
-    title: body.title,
-    description: body.description,
-    details: body.details,
-    attachments,
-    tags: body.tags,
-    points: body.points,
+    username: body.username,
+    email: body.email,
+    full_name: body.full_name,
+    role_id: body.role_id,
+    is_active: body.is_active,
   });
 
-  return apiFetch<Achievement>(
-    `${ACHIEVEMENTS_BASE}/${id}`,
+  return apiFetch<User>(
+    `${USERS_BASE}/${id}`,
     {
       method: "PUT",
       headers: {
@@ -206,93 +199,137 @@ export async function updateAchievement(
   );
 }
 
-export async function deleteAchievement(
+export async function deleteUser(
   id: string,
   opts: ApiOptions = {}
 ): Promise<void> {
   await apiFetch<unknown>(
-    `${ACHIEVEMENTS_BASE}/${id}`,
+    `${USERS_BASE}/${id}`,
     { method: "DELETE" },
     opts
   );
 }
 
-export async function submitAchievement(
+export async function updateUserRole(
   id: string,
+  roleId: string,
   opts: ApiOptions = {}
 ): Promise<unknown> {
-  // backend balikin UpdateAchievementReferenceResponse (status + data reference)
   return apiFetch<unknown>(
-    `${ACHIEVEMENTS_BASE}/${id}/submit`,
-    { method: "POST" },
-    opts
-  );
-}
-
-export async function uploadAchievementAttachment(
-  id: string,
-  file: File,
-  opts: ApiOptions = {}
-): Promise<Attachment> {
-  const form = new FormData();
-  form.append("file", file);
-
-  return apiFetch<Attachment>(
-    `${ACHIEVEMENTS_BASE}/${id}/attachments`,
+    `${USERS_BASE}/${id}/role`,
     {
-      method: "POST",
-      body: form,
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ role_id: roleId }),
     },
     opts
   );
 }
 
-
-
-export async function getAchievementStats(
+export async function createStudentProfile(
+  userId: string,
+  body: CreateStudentRequest,
   opts: ApiOptions = {}
-): Promise<AchievementStats> {
-  return apiFetch<AchievementStats>(
-    `${ACHIEVEMENTS_BASE}/stats`,
+): Promise<Student> {
+  return apiFetch<Student>(
+    `${USERS_BASE}/${userId}/student-profile`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    },
+    opts
+  );
+}
+
+export async function createLecturerProfile(
+  userId: string,
+  body: CreateLecturerRequest,
+  opts: ApiOptions = {}
+): Promise<Lecturer> {
+  return apiFetch<Lecturer>(
+    `${USERS_BASE}/${userId}/lecturer-profile`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    },
+    opts
+  );
+}
+
+export async function updateStudentAdvisor(
+  studentId: string,
+  advisorId: string,
+  opts: ApiOptions = {}
+): Promise<unknown> {
+  return apiFetch<unknown>(
+    `${STUDENTS_BASE}/${studentId}/advisor`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ advisor_id: advisorId || "" }),
+    },
+    opts
+  );
+}
+
+export async function getLecturers(
+  opts: ApiOptions = {}
+): Promise<Lecturer[]> {
+  return apiFetch<Lecturer[]>(
+    `/api/v1/lecturers`,
     { method: "GET" },
     opts
   );
 }
 
-export async function verifyAchievement(
-  id: string,
+export async function getRoles(
   opts: ApiOptions = {}
-): Promise<unknown> {
-  return apiFetch<unknown>(
-    `${ACHIEVEMENTS_BASE}/${id}/verify`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ status: "verified" }),
-    },
+): Promise<Role[]> {
+  return apiFetch<Role[]>(
+    `/api/v1/roles`,
+    { method: "GET" },
     opts
   );
 }
 
-export async function rejectAchievement(
-  id: string,
-  rejectionNote: string,
+export async function getStudentByUserId(
+  userId: string,
   opts: ApiOptions = {}
-): Promise<unknown> {
-  return apiFetch<unknown>(
-    `${ACHIEVEMENTS_BASE}/${id}/reject`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        status: "rejected",
-        rejection_note: rejectionNote,
-      }),
-    },
-    opts
-  );
+): Promise<Student | null> {
+  try {
+    const students = await apiFetch<Student[]>(
+      `${STUDENTS_BASE}?user_id=${userId}`,
+      { method: "GET" },
+      opts
+    );
+    return students && students.length > 0 ? students[0] : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function getLecturerByUserId(
+  userId: string,
+  opts: ApiOptions = {}
+): Promise<Lecturer | null> {
+  try {
+    const lecturers = await apiFetch<Lecturer[]>(
+      `/api/v1/lecturers?user_id=${userId}`,
+      { method: "GET" },
+      opts
+    );
+    return lecturers && lecturers.length > 0 ? lecturers[0] : null;
+  } catch {
+    return null;
+  }
 }

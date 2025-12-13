@@ -87,6 +87,7 @@ export type Achievement = AchievementBase & {
 
 export type AchievementListItem = AchievementBase & {
   status: AchievementStatus | string;
+  student_name?: string;
 };
 
 export interface AchievementStats {

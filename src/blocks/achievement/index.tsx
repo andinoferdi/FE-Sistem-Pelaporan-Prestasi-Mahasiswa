@@ -600,53 +600,71 @@ export default function AchievementPage() {
   });
 
   const columns = useMemo<ColumnDef<AchievementListItem>[]>(
-    () => [
-      {
-        accessorKey: "id",
-        header: "ID",
-        meta: { style: { width: "110px" } },
-        cell: ({ row }) => (
-          <span className="font-mono text-sm">#{row.original.id.slice(-8)}</span>
-        ),
-      },
-      {
-        accessorKey: "achievementType",
-        header: "Tipe",
-        meta: { style: { minWidth: "120px" } },
-        cell: ({ row }) => (
-          <span className="text-sm">{getTypeLabel(row.original.achievementType)}</span>
-        ),
-      },
-      {
-        accessorKey: "title",
-        header: "Judul",
-        meta: { style: { minWidth: "320px" } },
-        cell: ({ row }) => (
-          <div className="max-w-[360px]">
-            <span className="line-clamp-2 text-sm font-medium">{row.original.title}</span>
-          </div>
-        ),
-      },
-      {
-        accessorKey: "points",
-        header: "Poin",
-        meta: { style: { width: "90px" } },
-        cell: ({ row }) => <span className="font-medium">{row.original.points}</span>,
-      },
-      {
-        accessorKey: "status",
-        header: "Status",
-        meta: { style: { width: "130px" } },
-        cell: ({ row }) => getStatusBadge((row.original.status ?? "draft") as AchievementStatus),
-      },
-      {
-        id: "actions",
-        header: "Aksi",
-        enableHiding: false,
-        meta: { style: { width: "110px" }, align: "right" },
-        cell: ({ row }) => <ActionCell row={row.original} isMahasiswa={isMahasiswa} isDosenWali={isDosenWali} />,
-      },
-    ],
+    () => {
+      const baseColumns: ColumnDef<AchievementListItem>[] = [
+        {
+          accessorKey: "id",
+          header: "ID",
+          meta: { style: { width: "110px" } },
+          cell: ({ row }) => (
+            <span className="font-mono text-sm">#{row.original.id.slice(-8)}</span>
+          ),
+        },
+        {
+          accessorKey: "achievementType",
+          header: "Tipe",
+          meta: { style: { minWidth: "120px" } },
+          cell: ({ row }) => (
+            <span className="text-sm">{getTypeLabel(row.original.achievementType)}</span>
+          ),
+        },
+      ];
+
+      if (!isMahasiswa) {
+        baseColumns.push({
+          accessorKey: "student_name",
+          header: "Pengirim",
+          meta: { style: { minWidth: "180px" } },
+          cell: ({ row }) => (
+            <span className="text-sm">{row.original.student_name || "-"}</span>
+          ),
+        });
+      }
+
+      baseColumns.push(
+        {
+          accessorKey: "title",
+          header: "Judul",
+          meta: { style: { minWidth: "320px" } },
+          cell: ({ row }) => (
+            <div className="max-w-[360px]">
+              <span className="line-clamp-2 text-sm font-medium">{row.original.title}</span>
+            </div>
+          ),
+        },
+        {
+          accessorKey: "points",
+          header: "Poin",
+          meta: { style: { width: "90px" } },
+          cell: ({ row }) => <span className="font-medium">{row.original.points}</span>,
+        },
+        {
+          accessorKey: "status",
+          header: "Status",
+          meta: { style: { width: "130px" } },
+          cell: ({ row }) => getStatusBadge((row.original.status ?? "draft") as AchievementStatus),
+        },
+        {
+          id: "actions",
+          header: "Aksi",
+          enableHiding: false,
+          meta: { style: { width: "110px" }, align: "right" },
+          cell: ({ row }) => <ActionCell row={row.original} isMahasiswa={isMahasiswa} isDosenWali={isDosenWali} />,
+        }
+      );
+
+      return baseColumns;
+    },
     [isMahasiswa, isDosenWali]
   );
 
