@@ -12,8 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-import { getAchievementById, verifyAchievement, rejectAchievement } from "@/services/achievement";
-import type { AchievementStatus } from "@/types/achievement";
+import { getAchievementById, verifyAchievement, rejectAchievement, getAchievementHistory } from "@/services/achievement";
+import type { AchievementStatus, AchievementHistoryItem } from "@/types/achievement";
 import { useAuth } from "@/contexts/auth-context";
 import { useCurrentUser } from "@/services/auth";
 import { useInvalidateMutation } from "@/hooks/use-invalidate-mutation";
@@ -160,6 +160,17 @@ export default function AchievementDetail() {
   } = useQuery({
     queryKey: ["achievements", achievementId],
     queryFn: () => getAchievementById(achievementId),
+    enabled: Boolean(achievementId),
+    refetchOnWindowFocus: false,
+  });
+
+  const {
+    data: history,
+    isLoading: isLoadingHistory,
+    error: historyError,
+  } = useQuery<AchievementHistoryItem[]>({
+    queryKey: ["achievements", achievementId, "history"],
+    queryFn: () => getAchievementHistory(achievementId),
     enabled: Boolean(achievementId),
     refetchOnWindowFocus: false,
   });
@@ -597,6 +608,64 @@ export default function AchievementDetail() {
               </p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-4">
+        <CardContent className="p-4">
+          <p className="text-sm font-medium">Riwayat Status</p>
+          {isLoadingHistory ? (
+            <div className="mt-4 space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-16 animate-pulse rounded-md bg-gray-200" />
+              ))}
+            </div>
+          ) : historyError ? (
+            <div className="mt-4 rounded-md border border-destructive/30 bg-destructive/10 p-4">
+              <p className="text-sm text-destructive">
+                Gagal memuat riwayat status
+              </p>
+            </div>
+          ) : history && history.length > 0 ? (
+            <div className="mt-4 space-y-4">
+              {history.map((item: AchievementHistoryItem, index) => (
+                <div
+                  key={index}
+                  className="flex items-start gap-4 border-l-2 border-border pl-4"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      {getStatusBadge(item.status)}
+                      <span className="text-muted-foreground text-xs">
+                        {formatDateSafe(item.changed_at)}
+                      </span>
+                    </div>
+                    {item.changed_by_name && (
+                      <p className="mt-1 text-sm">
+                        Oleh: {item.changed_by_name}
+                      </p>
+                    )}
+                    {item.note && (
+                      <div className="mt-2 rounded-md border border-muted bg-muted/50 p-2">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          Catatan:
+                        </p>
+                        <p className="mt-1 text-sm whitespace-pre-line">
+                          {item.note}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-4">
+              <p className="text-sm text-muted-foreground">
+                Belum ada riwayat status
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 

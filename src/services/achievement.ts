@@ -8,6 +8,7 @@ import type {
   CreateAchievementBody,
   UpdateAchievementBody,
   Attachment,
+  AchievementHistoryItem,
 } from "@/types/achievement";
 
 type ApiOptions = {
@@ -293,6 +294,17 @@ export async function rejectAchievement(
         rejection_note: rejectionNote,
       }),
     },
+    opts
+  );
+}
+
+export async function getAchievementHistory(
+  id: string,
+  opts: ApiOptions = {}
+): Promise<AchievementHistoryItem[]> {
+  return apiFetch<AchievementHistoryItem[]>(
+    `${ACHIEVEMENTS_BASE}/${id}/history`,
+    { method: "GET" },
     opts
   );
 }

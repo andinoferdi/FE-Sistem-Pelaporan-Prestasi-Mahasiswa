@@ -161,3 +161,13 @@ export interface AchievementReference {
   created_at: string;
   updated_at: string;
 }
+
+export interface AchievementHistoryItem {
+  status: AchievementStatus;
+  changed_at: string;
+  changed_by: string | null;
+  changed_by_name: string | null;
+  note: string | null;
+}
+
+export type GetAchievementHistoryResponse = ApiSuccess<AchievementHistoryItem[]>;
